@@ -45,10 +45,6 @@ footer{
     color: rgba(0,0,0,0.2);
     border-radius: 30%;
 }
-#img_logo{
-    width: 9em;
-    height: 3em;
-}
 .card_green{
     display: flex;
     flex-direction: column;
@@ -67,16 +63,64 @@ footer{
     align-content: center;
     background-color: inherit;
     border-radius: inherit;
+    width: 100%;
 }
 .card_main{
     display: flex;
     flex-direction: column; 
-    align-content: center;
-    justify-content: space-between;
     width: 95%;
     height: 60%;
     border-radius: 8%;
     margin-bottom: 2.5%;
+    background-color: white;
+}
+.type_holder{
+    display: flex;
+    justify-content: center;
+    margin-top: -20%;
+}
+.characteristics_holder{
+    display: flex;
+}
+.type_grass{
+    display: flex;
+    align-items: center;
+    background-color:  rgb(158, 210, 109);
+    color: white;
+    border-radius: 10em;
+    padding-left: 0.8em;
+    padding-right: 0.8em;
+    margin-right: 0.2em;
+}
+.type_grass::before { 
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-image: url("/pokedex/img/grass.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 0.2em;
+}
+.type_poison{
+    background-color:  rgb(161, 109, 210);
+    display: flex;
+    align-items: center;
+    color: white;
+    border-radius: 10em;
+    padding-left: 0.8em;
+    padding-right: 0.8em;
+    margin-left: 0.2em;
+}
+.type_poison::before { 
+    content: "";
+    display: inline-block;
+    width: 1.1em;
+    height: 1.1em;
+    background-image: url("/pokedex/img/poison.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 0.2em;
 }
 .card_name{
     color: rgba(255, 255, 255, 0.906);
@@ -90,6 +134,10 @@ footer{
     padding-top: 0.3em;
     padding-right: 0.6em;
     margin: 0em;
+}
+#img_logo{
+    width: 9em;
+    height: 3em;
 }
 #img_pokemon{
     position: relative;
