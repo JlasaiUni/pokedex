@@ -1,11 +1,9 @@
 header{
     background-color: rgb(245, 245, 245);
 }
-
 main{
     background-color: rgb(245, 245, 245);
 }
-
 #main_nav{
     display: flex;
     justify-content: center;
@@ -14,11 +12,9 @@ main{
     background-color: rgb(245, 245, 245);
     
 }
-
 footer{
     background-color: black;
 }
-
 .nav_button{
     margin: 0.5em;
     padding-left: 0.3em;
@@ -26,12 +22,10 @@ footer{
     border: 2px solid rgba(0,0,0,0.2);
     border-radius: 30%;
 }
-
 #img_logo{
     width: 9em;
     height: 3em;
 }
-
 .card_holder{
     display: flex;
     justify-content: center;
@@ -40,26 +34,36 @@ footer{
     background-color: rgb(245, 245, 245);
     box-shadow: inset 0 1px 10px rgba(0,0,0,0.2);
 }
-
 .card_green{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     width: 15em;
     height: 20em;
-    background-color: rgb(148, 209, 91);
+    background-color: rgb(158, 210, 109);
     margin: 1em;
     border-radius: 1em;
     box-shadow: 0 1px 10px rgba(0,0,0,0.1);
 }
 .card_header{
-    display: flex;
-    flex-direction: row;    
+    display: flex;   
     justify-content: space-between;
     align-content: center;
     background-color: inherit;
     border-radius: inherit;
 }
-
+.card_main{
+    display: flex;
+    flex-direction: column; 
+    align-content: center;
+    justify-content: space-between;
+    width: 80%;
+    height: 50%;
+    border-radius: 25%;
+}
 .card_name{
-    color: white;
+    color: rgba(255, 255, 255, 0.906);
     padding-top: 0.3em;
     padding-left: 0.6em;
     margin: 0em;
@@ -70,6 +74,13 @@ footer{
     padding-top: 0.3em;
     padding-right: 0.6em;
     margin: 0em;
+}
+#img_bulbasaur{
+    position: relative;
+    left: 25%;
+    top: -25%;
+    width: 50%;
+    height: 50%;
 }
 .copyright{
     color: white;
