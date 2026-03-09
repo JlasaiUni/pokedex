@@ -161,13 +161,15 @@ footer{
 .HP, .ATK, .DEF, .SAT, .SDF, .SPD{
     display: flex;
     flex-flow: row;
+    justify-content: space-around;
 }
 .stat_title{
     margin: 0%;
-    
+    font-size: 60%;
 }
 .stat_num{
     margin: 0%;
+    font-size: 60%;
 }
 .separation_line{
     margin: 0%;
