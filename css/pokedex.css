@@ -1,17 +1,8 @@
-*{
-    border: 1px solid black;
-}
-
 header{
     background-color: rgb(245, 245, 245);
 }
 
 main{
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    flex-direction: column;
     background-color: rgb(245, 245, 245);
 }
 
@@ -21,6 +12,7 @@ main{
     align-content: center;
     align-items: center;
     background-color: rgb(245, 245, 245);
+    
 }
 
 footer{
@@ -29,6 +21,10 @@ footer{
 
 .nav_button{
     margin: 0.5em;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-radius: 30%;
 }
 
 #img_logo{
@@ -40,6 +36,9 @@ footer{
     display: flex;
     justify-content: center;
     align-content: center;
+    flex-wrap: wrap;
+    background-color: rgb(245, 245, 245);
+    box-shadow: inset 0 1px 10px rgba(0,0,0,0.2);
 }
 
 .card_green{
