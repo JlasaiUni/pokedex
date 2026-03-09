@@ -42,11 +42,34 @@ footer{
 }
 
 .card_green{
-    width: 20em;
-    height: 30em;
+    width: 15em;
+    height: 20em;
     background-color: rgb(148, 209, 91);
     margin: 1em;
     border-radius: 1em;
+    box-shadow: 0 1px 10px rgba(0,0,0,0.1);
+}
+.card_header{
+    display: flex;
+    flex-direction: row;    
+    justify-content: space-between;
+    align-content: center;
+    background-color: inherit;
+    border-radius: inherit;
+}
+
+.card_name{
+    color: white;
+    padding-top: 0.3em;
+    padding-left: 0.6em;
+    margin: 0em;
+    font-size:110%;
+}
+.card_number{
+    color: rgba(255, 255, 255, 0.525);;
+    padding-top: 0.3em;
+    padding-right: 0.6em;
+    margin: 0em;
 }
 .copyright{
     color: white;
