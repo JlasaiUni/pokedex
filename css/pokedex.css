@@ -1,0 +1,57 @@
+*{
+    border: 1px solid black;
+}
+
+header{
+    background-color: rgb(245, 245, 245);
+}
+
+main{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgb(245, 245, 245);
+}
+
+#main_nav{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    background-color: rgb(245, 245, 245);
+}
+
+footer{
+    background-color: black;
+}
+
+.nav_button{
+    margin: 0.5em;
+}
+
+#img_logo{
+    width: 9em;
+    height: 3em;
+}
+
+.card_holder{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+.card_green{
+    width: 20em;
+    height: 30em;
+    background-color: rgb(148, 209, 91);
+    margin: 1em;
+    border-radius: 1em;
+}
+.copyright{
+    color: white;
+    text-align: center;
+    padding: 1em;
+    margin: 0em;
+}
