@@ -157,11 +157,13 @@ footer{
 .stats_holder{
     display: flex;
     flex-flow: column;
+    margin-top: -0.5em;
 }
 .HP, .ATK, .DEF, .SAT, .SDF, .SPD{
     display: flex;
     flex-flow: row;
     justify-content: space-around;
+    align-items: center;
 }
 .stat_title{
     margin: 0%;
@@ -170,6 +172,18 @@ footer{
 .stat_num{
     margin: 0%;
     font-size: 60%;
+}
+.progress{
+    width: 60%;
+    height: 0.3rem;
+    background-color: lightgrey;
+    border-radius: 2em;
+}
+.progress_bar{
+    width: 45%;
+    height: 0.3rem;
+    background-color: black ;
+    border-radius: 2em;
 }
 .separation_line{
     margin: 0%;
