@@ -12,7 +12,7 @@ header{
     align-items: center;
     align-content: center;
     box-shadow: inset 0 1px 10px rgba(0,0,0,0.2);
-    min-height: 100vh;
+    min-height: 90vh;
 }
 #main_nav{
     display: flex;
@@ -81,6 +81,89 @@ footer{
     border-radius: 8%;
     margin-bottom: 2.5%;
     background-color: white;
+}
+.pokedex_design{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: 2px solid black;
+    background-color: rgb(205, 43, 43);
+    border-radius: 1em;
+}
+.pokedex_design_right{
+    display: flex;
+    align-items: center;
+    border: 2px solid black;
+    background-color: rgb(148, 188, 148);
+    border-radius: 1em;
+    margin: 5%;
+}
+.pokedex_design_right img{
+    margin-top: -1em;
+    height: fit-content;
+    width: fit-content;
+}
+.pokedex_design_left_text{
+    border: 2px solid black;
+    background-color: rgb(148, 188, 148);
+    border-radius: 1em;
+    margin: 5%;
+    padding: 5%;
+    text-align: center;
+    font-family: "Pokemon GB", monospace;
+}
+.pokedex_design_left_buttons{
+    display: flex;
+    align-items: center;
+}
+.pokedex_design_left_buttons img{
+    width: 20em;
+    height: 16em;
+}
+.black_circle{
+    width: 7em;
+    height: 7em;
+    margin: 5%;
+    margin-right: 40%;
+    margin-left: 10%;
+    border-radius: 100%;
+    background-color: black;
+    border: 2px solid lightgray;
+}
+.blue_circle{
+    width: 5em;
+    height: 5em;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    margin-left: 5%;
+    margin-right: 5%;
+    border-radius: 100%;
+    background-color: rgb(37, 170, 223);
+    border: 2px solid lightgray;
+}
+.red_circle{
+    width: 2em;
+    height: 2em;
+    margin: 2%;
+    border-radius: 100%;
+    background-color: rgb(223, 37, 37);
+    border: 2px solid lightgray;
+}
+.yellow_circle{
+    width: 2em;
+    height: 2em;
+    margin: 2%;
+    border-radius: 100%;
+    background-color: rgb(255, 251, 0);
+    border: 2px solid lightgray;
+}
+.green_circle{
+    width: 2em;
+    height: 2em;
+    margin: 2%;
+    border-radius: 100%;
+    background-color: rgb(30, 223, 27);
+    border: 2px solid lightgray;
 }
 .type_holder{
     display: flex;
