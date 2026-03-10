@@ -1,3 +1,7 @@
+body{
+    display: flex;
+    flex-direction: column;
+}
 header{
     background-color: rgb(245, 245, 245);
 }
@@ -8,6 +12,7 @@ header{
     align-items: center;
     align-content: center;
     box-shadow: inset 0 1px 10px rgba(0,0,0,0.2);
+    min-height: 100vh;
 }
 #main_nav{
     display: flex;
@@ -26,6 +31,9 @@ header{
 }
 footer{
     background-color: black;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }
 .card_holder{
     display: flex;
@@ -168,13 +176,16 @@ footer{
 .stat_title{
     margin: 0%;
     font-size: 60%;
+    color: rgba(181, 181, 181, 0.95);
+    font-weight: 600;
 }
 .stat_num{
     margin: 0%;
     font-size: 60%;
+    font-weight: 600;
 }
 .progress{
-    width: 60%;
+    width: 75%;
     height: 0.3rem;
     background-color: lightgrey;
     border-radius: 2em;
