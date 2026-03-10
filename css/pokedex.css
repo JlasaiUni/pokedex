@@ -5,7 +5,7 @@ body{
 header{
     background-color: rgb(245, 245, 245);
 }
-#body_main{
+main{
     background-color: rgb(245, 245, 245);
     display: flex;
     flex-direction: column;
@@ -15,7 +15,7 @@ header{
     min-height: 100vh;
     overflow: scroll;
 }
-#main_nav{
+nav{
     display: flex;
     justify-content: center;
     align-content: center;
@@ -275,40 +275,39 @@ footer{
     background-repeat: no-repeat;
     margin-right: 0.2em;
 }
-.weight{
+.weight, .height{
     display: flex;
     align-items: center;
     text-align: center;
+    font-size: 80%;
+    font-weight: 600;
 }
 .weight::before{
     content: "";
     display: inline-block;
-    width: 1.7em;
-    height: 1.7em;
+    width: 2em;
+    height: 2em;
     background-image: url("/pokedex/img/icono-peso.png");
     background-size: contain;
     background-repeat: no-repeat;
+    margin-top: 0.4em;
     margin-right: 0.2em;
-}
-.height{
-    display: flex;
-    align-items: center;
-    text-align: center;
 }
 .height::before{
     content: "";
     display: inline-block;
-    width: 1.7em;
-    height: 1.7em;
+    width: 2.2em;
+    height: 2em;
     background-image: url("/pokedex/img/icono-altura.png");
     background-size: contain;
     background-repeat: no-repeat;
+    margin-top: 0.2em;
     margin-right: 0.2em;
 }
 .stats_holder{
     display: flex;
     flex-flow: column;
-    margin-top: -0.5em;
+    margin-top: -0.8em;
 }
 .HP, .ATK, .DEF, .SAT, .SDF, .SPD{
     display: flex;
@@ -343,7 +342,7 @@ footer{
     margin: 0%;
     background-color: rgba(220, 220, 220, 0.906);
     width: 1px;
-    height: 80%;
+    height: 70%;
     margin-left: 5%;
     margin-right: 5%;
 }
@@ -367,7 +366,7 @@ footer{
     top: 25%;
     left: 10%;
 }
-#img_pokemon{
+.img_pokemon{
     position: relative;
     left: 25%;
     top: -25%;

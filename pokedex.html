@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/pokedex.css">
     <link rel="stylesheet" href="./css/reset.css">
     <link rel="stylesheet" href="./css/reboot.css">
-    <link rel="stylesheet" href="./css//normalize.css">
+    <link rel="stylesheet" href="./css/normalize.css">
+    <link rel="stylesheet" href="./css/pokedex.css">
     <title>Pokedex</title>
 </head>
 <body>
     <header>
       <img id="img_logo" src="./img/logo_pokedex.png" alt="logo pokedex" >
-      <nav id="main_nav"><a href="./index.html" class="nav_button">Home</a ><a href="./pokedex.html" class="nav_button">Pokedex</a></nav>
+      <nav>
+        <a href="./index.html" class="nav_button">Home</a >
+        <a href="./pokedex.html" class="nav_button">Pokedex</a>
+      </nav>
     </header>
-    <main id="body_main">
+    <main>
       <input id="buscador" type="text" placeholder="Search a Pokémon...">
       <div class="card_holder">
-        <div class="card_green">
+                        <!-- BULBASAUR -->
+        <article class="card_green">
           <header class="card_header">
             <p class="card_name"><strong>Bulbasaur</strong></p> 
             <p class="card_number"><strong>#001</strong></p>
           </header>
-          <main class="card_main">
-            <img id="img_pokemon" src="./img/001.png" alt="foto de Bulbasaur">
+          <section class="card_main">
+            <img class="img_pokemon" src="./img/001.png" alt="foto de Bulbasaur">
             <div class="type_holder">
               <p class="type_grass">Grass</p>
               <p class="type_poison">Poison</p>
@@ -41,23 +45,24 @@
               <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
               <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
             </div>
-          </main>
-        </div>
-        <div class="card_green">
+          </section>
+        </article>
+                        <!-- IVYSAUR -->
+        <article  class="card_green">
           <header class="card_header">
             <p class="card_name"><strong>Ivysaur</strong></p>
             <p class="card_number"><strong>#002</strong></p>
           </header>
-          <main class="card_main">
-            <img id="img_pokemon" src="./img/002.png" alt="foto de Ivysaur">
+          <section class="card_main">
+            <img class="img_pokemon" src="./img/002.png" alt="foto de Ivysaur">
             <div class="type_holder">
               <p class="type_grass">Grass</p>
               <p class="type_poison">Poison</p>
             </div>
             <div class="characteristics_holder">
-              <p class="weight">6.9 kg</p>
+              <p class="weight">17 kg</p>
               <div class="separation_line"></div>
-              <p class="height">0.7 m</p>
+              <p class="height">1 m</p>
             </div>
             <div class="stats_holder">
               <div class="HP"><p class="stat_title">HP</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
@@ -67,23 +72,24 @@
               <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
               <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
             </div>
-          </main>
-        </div>
-        <div class="card_green">
+          </section>
+        </article>
+                        <!-- VENUSAUR -->
+        <article class="card_green">
           <header class="card_header">
             <p class="card_name"><strong>Venusaur</strong></p>
             <p class="card_number"><strong>#003</strong></p>
           </header>
-          <main class="card_main">
-            <img id="img_pokemon" src="./img/003.png" alt="foto de Venusaur">
+          <section class="card_main">
+            <img class="img_pokemon" src="./img/003.png" alt="foto de Venusaur">
             <div class="type_holder">
               <p class="type_grass">Grass</p>
               <p class="type_poison">Poison</p>
             </div>
             <div class="characteristics_holder">
-              <p class="weight">6.9 kg</p>
+              <p class="weight">100 kg</p>
               <div class="separation_line"></div>
-              <p class="height">0.7 m</p>
+              <p class="height">2 m</p>
             </div>
             <div class="stats_holder">
               <div class="HP"><p class="stat_title">HP</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
@@ -93,22 +99,23 @@
               <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
               <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
             </div>
-          </main>
-        </div>
-        <div class="card_red">
+          </section>
+        </article>
+                        <!-- CHARMANDER -->
+        <article class="card_red">
           <header class="card_header">
             <p class="card_name"><strong>Charmander</strong></p>
             <p class="card_number"><strong>#004</strong></p>
           </header>
-          <main class="card_main">
-            <img id="img_pokemon" src="./img/004.png" alt="foto de Charmander">
+          <section class="card_main">
+            <img class="img_pokemon" src="./img/004.png" alt="foto de Charmander">
             <div class="type_holder">
               <p class="type_fire">Fire</p>
             </div>
             <div class="characteristics_holder">
-              <p class="weight">6.9 kg</p>
+              <p class="weight">8.5 kg</p>
               <div class="separation_line"></div>
-              <p class="height">0.7 m</p>
+              <p class="height">0.6 m</p>
             </div>
             <div class="stats_holder">
               <div class="HP"><p class="stat_title">HP</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
@@ -118,22 +125,23 @@
               <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
               <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
             </div>
-          </main>
-        </div>
-        <div class="card_red">
+          </section>
+        </article>
+                        <!-- CHARMELEON -->
+        <article class="card_red">
           <header class="card_header">
             <p class="card_name"><strong>Charmeleon</strong></p>
             <p class="card_number"><strong>#005</strong></p>
           </header>
-          <main class="card_main">
-            <img id="img_pokemon" src="./img/005.png" alt="foto de Charmeleon">
+          <section class="card_main">
+            <img class="img_pokemon" src="./img/005.png" alt="foto de Charmeleon">
             <div class="type_holder">
               <p class="type_fire">Fire</p>
             </div>
             <div class="characteristics_holder">
-              <p class="weight">6.9 kg</p>
+              <p class="weight">19 kg</p>
               <div class="separation_line"></div>
-              <p class="height">0.7 m</p>
+              <p class="height">1.1 m</p>
             </div>
             <div class="stats_holder">
               <div class="HP"><p class="stat_title">HP</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
@@ -143,23 +151,24 @@
               <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
               <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
             </div>
-          </main>
-        </div>
-        <div class="card_red">
+          </section>
+        </article>
+                        <!-- CHARIZARD -->
+        <article class="card_red">
           <header class="card_header">
             <p class="card_name"><strong>Charizard</strong></p>
             <p class="card_number"><strong>#006</strong></p>
           </header>
-          <main class="card_main">
-            <img id="img_pokemon" src="./img/006.png" alt="foto de Charizard">
+          <section class="card_main">
+            <img class="img_pokemon" src="./img/006.png" alt="foto de Charizard">
             <div class="type_holder">
               <p class="type_fire">Fire</p>
               <p class="type_flying">Flying</p>
             </div>
             <div class="characteristics_holder">
-              <p class="weight">6.9 kg</p>
+              <p class="weight">90.5 kg</p>
               <div class="separation_line"></div>
-              <p class="height">0.7 m</p>
+              <p class="height">1.7 m</p>
             </div>
             <div class="stats_holder">
               <div class="HP"><p class="stat_title">HP</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
@@ -169,10 +178,10 @@
               <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
               <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
             </div>
-          </main>
-        </div>
+          </section>
+        </article>
       </div>
     </main>
-    <footer><p class="copyright"> c 2024 Pokémon c 1995 - 2024 Nintendo/Creatures Inc./GAME FREAK inc. TM, R Nintendo.</p></footer>
+    <footer><p class="copyright"> © 2024 Pokémon © 1995-2024 Nintendo / Creatures Inc. / GAME FREAK inc.</p></footer>
 </body>
 </html>
