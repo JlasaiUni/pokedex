@@ -29,6 +29,11 @@ header{
     border-radius: 0.6em;
     background-color: rgba(230, 230, 230, 0.808);
     border: 1px solid rgba(156, 155, 155, 0.637);
+    padding-left: 2.5em; 
+    background-image: url(../img/lupa-logo.png);
+    background-repeat: no-repeat;
+    background-size: 2em;
+    background-position: 0.2em center;
 }
 footer{
     background-color: black;
@@ -64,7 +69,7 @@ footer{
     height: 20em;
     background-color: rgb(158, 210, 109);
     margin: 1em;
-    border-radius: 1em;
+    border-radius: 1.4em;
     box-shadow: 0 1px 10px rgba(0,0,0,0.1);
 }
 .card_red{
@@ -357,7 +362,10 @@ footer{
 }
 #img_logo{
     width: 9em;
-    height: 3em;
+    height: 50%;
+    position: relative;
+    top: 25%;
+    left: 10%;
 }
 #img_pokemon{
     position: relative;
