@@ -250,7 +250,7 @@ footer{
     display: inline-block;
     width: 1em;
     height: 1em;
-    background-image: url("/pokedex/img/fire.webp");
+    background-image: url("/pokedex/img/fire.png");
     background-size: contain;
     background-repeat: no-repeat;
     margin-right: 0.2em;
@@ -378,4 +378,10 @@ footer{
     text-align: center;
     padding: 1em;
     margin: 0em;
+}
+
+@media (max-width: 576px) {
+  #img_logo{
+    top: 5%;
+    }
 }
