@@ -40,9 +40,6 @@
 .card_big:has(:first-of-type.type_steel){background-color: rgb(184, 184, 208);}
 .card_big:has(:first-of-type.type_fairy){background-color: rgb(238, 153, 172);}
 
-.card_main_big{
-
-}
 .img_pokemon_big{
     position: relative;
     left: 25%;
