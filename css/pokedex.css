@@ -79,7 +79,7 @@ footer{
     width: 15em;
     height: 20em;
     margin: 1em;
-    border-radius: 1.4em;
+    border-radius: 1em;
     box-shadow: 0 1px 10px rgba(0,0,0,0.1);
 }
 
@@ -131,7 +131,7 @@ footer{
     flex-direction: column; 
     width: 95%;
     height: 70%;
-    border-radius: 8%;
+    border-radius: 5%;
     margin-bottom: 2.5%;
     background-color: white;
 }
@@ -284,6 +284,7 @@ footer{
     font-size: 60%;
     color: rgba(181, 181, 181, 0.95);
     font-weight: 600;
+    width: 1.4em;
 }
 .stat_num{
     margin: 0%;
