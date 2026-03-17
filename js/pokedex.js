@@ -4,8 +4,11 @@ import p3 from '../data/3.json' with { type: 'json' };
 import p4 from '../data/4.json' with { type: 'json' };
 import p5 from '../data/5.json' with { type: 'json' };
 import p6 from '../data/6.json' with { type: 'json' };
+import p7 from '../data/7.json' with { type: 'json' };
+import p8 from '../data/8.json' with { type: 'json' };
+import p9 from '../data/9.json' with { type: 'json' };
 
-const pokemons = [p1, p2, p3, p4, p5, p6];
+const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
 
 function loadPokemons(pokemons) {
     pokemons.forEach(pokemon => {
