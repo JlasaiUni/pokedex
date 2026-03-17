@@ -1,4 +1,3 @@
-
 import p1 from '../data/1.json' with { type: 'json' };
 import p2 from '../data/2.json' with { type: 'json' };
 import p3 from '../data/3.json' with { type: 'json' };
@@ -18,6 +17,7 @@ function createPokemonCard(pokemon) {
 
     const card = document.createElement("a");
     card.classList.add("card_link");
+    card.href = `cardDetallado.html`;
 
     const types = pokemon.types.map((t) => t.type.name);
 
@@ -41,7 +41,7 @@ function createPokemonCard(pokemon) {
                      alt="foto de ${pokemon.name}">
 
                 <div class="type_holder">
-                    <p class="type type_${types[0]}">${types[0]}</p>
+                    ${pokemon.types.map(t => `<p class="type type_${t.type.name}">${t.type.name}</p>`).join("")}
                 </div>
 
                 <div class="characteristics_holder">
@@ -49,7 +49,7 @@ function createPokemonCard(pokemon) {
                     <div class="separation_line"></div>
                     <p class="height">${pokemon.height} m</p>
                 </div>
-                
+
                 <div class="stats_holder">
                     <div class="HP">
                         <p class="stat_title">HP</p>
