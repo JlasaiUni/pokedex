@@ -26,6 +26,12 @@ nav{
     align-items: center;
     background-color: rgb(245, 245, 245);
 }
+form{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 #buscador{
     width: 40%;;
     padding: 0.5em;
