@@ -12,6 +12,7 @@ const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
 
 const cardHolder = document.getElementById("card_holder");
 const buscador = document.getElementById("buscador");
+const form = document.getElementById("form-busqueda");
 
 const maxStatLimit = 255;
 
@@ -101,7 +102,9 @@ function createPokemonCard(pokemon) {
     cardHolder.appendChild(card);
 }
 
-buscador.addEventListener("input", () => {
+form.addEventListener("submit", event => {
+    event.preventDefault();
+    
     const busqueda = buscador.value.toLowerCase();
     const filtrados = pokemons.filter(pokemon => pokemon.name.includes(busqueda));
 
