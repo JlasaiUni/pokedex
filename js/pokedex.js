@@ -10,7 +10,15 @@ import p9 from '../data/9.json' with { type: 'json' };
 
 const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
 
+const cardHolder = document.getElementById("card_holder");
+const buscador = document.getElementById("buscador");
+
+const maxStatLimit = 255;
+
 function loadPokemons(pokemons) {
+    
+    cardHolder.innerHTML = "";
+
     pokemons.forEach(pokemon => {
         createPokemonCard(pokemon);
     });
@@ -19,10 +27,9 @@ function loadPokemons(pokemons) {
 function createPokemonCard(pokemon) {
 
     const card = document.createElement("a");
+
     card.classList.add("card_link");
     card.href = `cardDetallado.html`;
-
-    const cardHolder = document.getElementById("card_holder");
 
     const stats = {
         hp : pokemon.stats[0].base_stat,
@@ -32,8 +39,6 @@ function createPokemonCard(pokemon) {
         specialDefense : pokemon.stats[4].base_stat,
         speed : pokemon.stats[5].base_stat,
     };
-
-    const maxLimit = 255;
 
     card.innerHTML = `
         <article class="card">
@@ -61,32 +66,32 @@ function createPokemonCard(pokemon) {
                     <div class="HP">
                         <p class="stat_title">HP</p>
                         <p class="stat_num">${stats.hp}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.hp / maxLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.hp / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="ATK">
                         <p class="stat_title">ATK</p>
                         <p class="stat_num">${stats.attack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.attack / maxLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.attack / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="DEF">
                         <p class="stat_title">DEF</p>
                         <p class="stat_num">${stats.defense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.defense / maxLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.defense / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="SAT">
                         <p class="stat_title">SAT</p>
                         <p class="stat_num">${stats.specialAttack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialAttack / maxLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialAttack / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="SDF">
                         <p class="stat_title">SDF</p>
                         <p class="stat_num">${stats.specialDefense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialDefense / maxLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialDefense / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="SPD">
                         <p class="stat_title">SPD</p>
                         <p class="stat_num">${stats.speed}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.speed / maxLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.speed / maxStatLimit) * 100}%"></div></div>
                     </div>
                 </div>
             </section>
@@ -96,9 +101,11 @@ function createPokemonCard(pokemon) {
     cardHolder.appendChild(card);
 }
 
+buscador.addEventListener("input", () => {
+    const busqueda = buscador.value.toLowerCase();
+    const filtrados = pokemons.filter(pokemon => pokemon.name.includes(busqueda));
+
+    loadPokemons(filtrados);
+});
+
 loadPokemons(pokemons);
-
-function filtroBuscador(){
-    document.getElementById();
-
-}
