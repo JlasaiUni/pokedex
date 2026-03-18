@@ -22,12 +22,16 @@ function createPokemonCard(pokemon) {
     card.classList.add("card_link");
     card.href = `cardDetallado.html`;
 
-    const types = pokemon.types.map((t) => t.type.name);
+    const cardHolder = document.getElementById("card_holder");
 
-    const stats = {};
-    pokemon.stats.forEach(stat => {
-        stats[stat.stat.name] = stat.base_stat;
-    });
+    const stats = {
+        hp : pokemon.stats[0].base_stat,
+        attack : pokemon.stats[1].base_stat,
+        defense : pokemon.stats[2].base_stat,
+        specialAttack : pokemon.stats[3].base_stat,
+        specialDefense : pokemon.stats[4].base_stat,
+        speed : pokemon.stats[5].base_stat,
+    };
 
     const maxLimit = 255;
 
@@ -71,13 +75,13 @@ function createPokemonCard(pokemon) {
                     </div>
                     <div class="SAT">
                         <p class="stat_title">SAT</p>
-                        <p class="stat_num">${stats['special-attack']}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats['special-attack'] / maxLimit) * 100}%"></div></div>
+                        <p class="stat_num">${stats.specialAttack}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialAttack / maxLimit) * 100}%"></div></div>
                     </div>
                     <div class="SDF">
                         <p class="stat_title">SDF</p>
-                        <p class="stat_num">${stats['special-defense']}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats['special-defense'] / maxLimit) * 100}%"></div></div>
+                        <p class="stat_num">${stats.specialDefense}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialDefense / maxLimit) * 100}%"></div></div>
                     </div>
                     <div class="SPD">
                         <p class="stat_title">SPD</p>
@@ -86,10 +90,15 @@ function createPokemonCard(pokemon) {
                     </div>
                 </div>
             </section>
-        </a>
+        </article>
     `;
 
-    document.getElementById("card_holder").appendChild(card);
+    cardHolder.appendChild(card);
 }
 
 loadPokemons(pokemons);
+
+function filtroBuscador(){
+    document.getElementById();
+
+}
