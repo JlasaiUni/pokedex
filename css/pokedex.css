@@ -81,6 +81,11 @@ footer{
   transform: scale(1.03);
   cursor: pointer;
 }
+.card_error{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .card{
     display: flex;
     flex-direction: column;
@@ -120,6 +125,7 @@ footer{
     border-radius: inherit;
     width: 100%;
 }
+
 .card_name{
     color: rgba(255, 255, 255, 0.906);
     padding-top: 0.3em;

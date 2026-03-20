@@ -20,9 +20,12 @@ function loadPokemons(pokemons) {
     
     cardHolder.innerHTML = "";
 
-    pokemons.forEach(pokemon => {
-        createPokemonCard(pokemon);
-    });
+    if (pokemons.length > 0) {
+        pokemons.forEach(pokemon => {createPokemonCard(pokemon);});
+    } else {
+        createErrorCard();
+    }
+
 }
 
 function createPokemonCard(pokemon) {
@@ -102,6 +105,19 @@ function createPokemonCard(pokemon) {
     cardHolder.appendChild(card);
 }
 
+function createErrorCard() {
+    const errorCard = document.createElement("div");
+    errorCard.classList.add("card_error");
+
+    errorCard.innerHTML = `
+        <img src="../img/Alert.png" alt="">
+        <p>An error ocurred getting Pokémons.</p>
+        <p>Please, try it later</p>
+    `;
+
+    cardHolder.appendChild(errorCard);
+}
+
 form.addEventListener("submit", event => {
     event.preventDefault();
 
@@ -109,6 +125,7 @@ form.addEventListener("submit", event => {
     const filtrados = pokemons.filter(pokemon => pokemon.name.includes(busqueda));
 
     loadPokemons(filtrados);
+    
 });
 
 loadPokemons(pokemons);

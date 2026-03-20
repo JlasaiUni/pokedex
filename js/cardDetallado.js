@@ -10,15 +10,14 @@ import p9 from '../data/9.json' with { type: 'json' };
  
 const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
  
-const params = new URLSearchParams(window.location.search);
-const id = parseInt(params.get("id"));
- 
 const cardHolder = document.getElementById("card_detallado_holder");
  
 const maxStatLimit = 255;
- 
-const pokemon = pokemons.find(p => p.id === id);
- 
+
+const params = new URLSearchParams(window.location.search);
+const id = parseInt(params.get("id"));
+const pokemon = pokemons[id-1];
+
 if (pokemon) {
     createDetailCard(pokemon);
 } else {
