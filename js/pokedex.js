@@ -16,14 +16,14 @@ const form = document.getElementById("form-busqueda");
 
 const maxStatLimit = 255;
 
-function loadPokemons(pokemons) {
+function loadPokemons(pokemons, msg) {
     
     cardHolder.innerHTML = "";
 
     if (pokemons.length > 0) {
         pokemons.forEach(pokemon => {createPokemonCard(pokemon);});
     } else {
-        createErrorCard();
+        createMissingCard(msg);
     }
 
 }
@@ -105,14 +105,13 @@ function createPokemonCard(pokemon) {
     cardHolder.appendChild(card);
 }
 
-function createErrorCard() {
+function createMissingCard(msg) {
     const errorCard = document.createElement("div");
-    errorCard.classList.add("card_error");
+    errorCard.classList.add("card_missing");
 
     errorCard.innerHTML = `
-        <img src="../img/Alert.png" alt="">
-        <p>An error ocurred getting Pokémons.</p>
-        <p>Please, try it later</p>
+        <img src="../img/PokeNot.png" alt="">
+        <p>There is no results for "${msg}".</p>
     `;
 
     cardHolder.appendChild(errorCard);
@@ -124,7 +123,7 @@ form.addEventListener("submit", event => {
     const busqueda = buscador.value.toLowerCase();
     const filtrados = pokemons.filter(pokemon => pokemon.name.includes(busqueda));
 
-    loadPokemons(filtrados);
+    loadPokemons(filtrados, busqueda);
     
 });
 
