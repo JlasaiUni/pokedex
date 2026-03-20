@@ -6,49 +6,26 @@
     <link rel="stylesheet" href="../css/reset.css">
     <link rel="stylesheet" href="../css/reboot.css">
     <link rel="stylesheet" href="../css/normalize.css">
-    <link rel="stylesheet" href="../css/pokedex.css">
     <link rel="stylesheet" href="../css/cardDetallado.css">
-    <title>Pokedex</title>
+    <link rel="stylesheet" href="../css/pokedex.css">
+    <script type="module" src="../js/cardDetallado.js"></script>
+    <title>Pokémon Detail</title>
 </head>
 <body>
     <header>
-      <img id="img_logo" src="../img/logo_pokedex.png" alt="logo pokedex" >
-      <nav>
-        <a href="./index.html" class="nav_button">Home</a >
-        <a href="./pokedex.html" class="nav_button">Pokedex</a>
-      </nav>
+        <img id="img_logo" src="../img/logo_pokedex.png" alt="logo pokedex">
+        <nav>
+            <a href="./index.html" class="nav_button">Home</a>
+            <a href="./pokedex.html" class="nav_button">Pokedex</a>
+        </nav>
     </header>
     <main>
-      <div id="card_big_holder">
-                        <!-- BULBASAUR -->
-          <article class="card_big">
-            <header class="card_header">
-              <p class="card_name"><strong>Bulbasaur</strong></p> 
-              <p class="card_number"><strong>#001</strong></p>
-            </header>
-            <section class="card_main_big">
-              <img class="img_pokemon_big" src="../img/001.png" alt="foto de Bulbasaur">
-              <div class="type_holder_big">
-                <p class="type type_grass">Grass</p>
-                <p class="type type_poison">Poison</p>
-              </div>
-              <div class="characteristics_holder_big">
-                <p class="weight">6.9 kg</p>
-                <div class="separation_line"></div>
-                <p class="height">0.7 m</p>
-              </div>
-              <div class="stats_holder_big">
-                <div class="HP"><p class="stat_title">HP</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
-                <div class="ATK"><p class="stat_title">ATK</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
-                <div class="DEF"><p class="stat_title">DEF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
-                <div class="SAT"><p class="stat_title">SAT</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
-                <div class="SDF"><p class="stat_title">SDF</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
-                <div class="SPD"><p class="stat_title">SPD</p><p class="stat_num">045</p><div class="progress"><div class="progress_bar"></div></div></div>
-              </div>
-            </section>
-          </article>
-      </div>
+        <div id="card_detallado_holder"></div>
     </main>
-    <footer><p class="copyright"> © 2024 Pokémon © 1995-2024 Nintendo / Creatures Inc. / GAME FREAK inc.</p></footer>
+    <footer>
+        <p class="copyright">
+            © 2024 Pokémon © 1995-2024 Nintendo / Creatures Inc. / GAME FREAK inc.
+        </p>
+    </footer>
 </body>
 </html>

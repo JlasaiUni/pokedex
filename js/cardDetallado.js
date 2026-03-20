@@ -7,63 +7,70 @@ import p6 from '../data/6.json' with { type: 'json' };
 import p7 from '../data/7.json' with { type: 'json' };
 import p8 from '../data/8.json' with { type: 'json' };
 import p9 from '../data/9.json' with { type: 'json' };
-
+ 
 const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
-
-const cardHolder = document.getElementById("card_holder");
-const buscador = document.getElementById("buscador");
-const form = document.getElementById("form-busqueda");
-
+ 
+const params = new URLSearchParams(window.location.search);
+const id = parseInt(params.get("id"));
+ 
+const cardHolder = document.getElementById("card_detallado_holder");
+ 
 const maxStatLimit = 255;
-
-function loadPokemons(pokemons) {
-    
-    cardHolder.innerHTML = "";
-
-    pokemons.forEach(pokemon => {
-        createPokemonCard(pokemon);
-    });
+ 
+const pokemon = pokemons.find(p => p.id === id);
+ 
+if (pokemon) {
+    createDetailCard(pokemon);
+} else {
+    cardHolder.innerHTML = "<p>Pokémon no encontrado.</p>";
 }
-
-function createPokemonCard(pokemon) {
-
-    const card = document.createElement("a");
-
-    card.classList.add("card_link");
-    card.href = "cardDetallado.html?id=" + pokemon.id;
-
+ 
+function createDetailCard(pokemon) {
     const stats = {
-        hp : pokemon.stats[0].base_stat,
-        attack : pokemon.stats[1].base_stat,
-        defense : pokemon.stats[2].base_stat,
-        specialAttack : pokemon.stats[3].base_stat,
-        specialDefense : pokemon.stats[4].base_stat,
-        speed : pokemon.stats[5].base_stat,
+        hp:             pokemon.stats[0].base_stat,
+        attack:         pokemon.stats[1].base_stat,
+        defense:        pokemon.stats[2].base_stat,
+        specialAttack:  pokemon.stats[3].base_stat,
+        specialDefense: pokemon.stats[4].base_stat,
+        speed:          pokemon.stats[5].base_stat,
     };
+ 
+    const abilitiesHTML = pokemon.abilities.map(a => `<span class="ability_tag">${a.ability.name}</span>`).join("");
+    
+    const typesHTML = pokemon.types.map(t => `<p class="type type_${t.type.name}">${t.type.name}</p>`).join("");
 
-    card.innerHTML = `
-        <article class="card">
-            <header class="card_header">
-                <p class="card_name"><strong>${pokemon.name}</strong></p> 
-                <p class="card_number"><strong>#${pokemon.id}</strong></p>
+    cardHolder.innerHTML = `
+        <article class="card_detallada">
+ 
+            <header class="card_detallada_header">
+                <p class="card_detallada_name"><strong>${pokemon.name}</strong></p>
+                <p class="card_detallada_number"><strong>#${pokemon.id}</strong></p>
             </header>
-
-            <section class="card_main">
-                <img class="img_pokemon" 
-                     src="${pokemon.sprites.other['official-artwork'].front_default}" 
-                     alt="foto de ${pokemon.name}">
-
-                <div class="type_holder">
-                    ${pokemon.types.map(t => `<p class="type type_${t.type.name}">${t.type.name}</p>`).join("")}
+ 
+            <img class="img_pokemon_grande"
+                 src="${pokemon.sprites.other['official-artwork'].front_default}"
+                 alt="foto de ${pokemon.name}">
+ 
+            <section class="card_detallada_main">
+ 
+                <div class="type_holder_detallado">
+                    ${typesHTML}
                 </div>
-
-                <div class="characteristics_holder">
+ 
+                <div class="characteristics_holder_detallado">
                     <p class="weight">${pokemon.weight / 10} kg</p>
                     <div class="separation_line"></div>
                     <p class="height">${pokemon.height / 10} m</p>
                 </div>
-
-                <div class="stats_holder">
+ 
+                <div class="abilities_holder">
+                    <p class="abilities_title">Abilities</p>
+                    <div class="abilities_list">
+                        ${abilitiesHTML}
+                    </div>
+                </div>
+ 
+                <div class="stats_holder_detallado">
                     <div class="HP">
                         <p class="stat_title">HP</p>
                         <p class="stat_num">${stats.hp}</p>
@@ -95,20 +102,10 @@ function createPokemonCard(pokemon) {
                         <div class="progress"><div class="progress_bar" style="width: ${(stats.speed / maxStatLimit) * 100}%"></div></div>
                     </div>
                 </div>
+ 
+                <button id="btn_volver" onclick="history.back()">← Volver</button>
+ 
             </section>
         </article>
     `;
-
-    cardHolder.appendChild(card);
 }
-
-form.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const busqueda = buscador.value.toLowerCase();
-    const filtrados = pokemons.filter(pokemon => pokemon.name.includes(busqueda));
-
-    loadPokemons(filtrados);
-});
-
-loadPokemons(pokemons);
