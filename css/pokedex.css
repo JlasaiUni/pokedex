@@ -17,7 +17,6 @@ main{
     align-items: center;
     align-content: center;
     min-height: 100vh;
-    overflow: scroll;
 }
 nav{
     display: flex;
@@ -68,7 +67,7 @@ footer{
     margin-right: 3em;
     border: 2px solid rgba(0,0,0,0.2);
     color: rgba(0,0,0,0.2);
-    border-radius: 30%;
+    border-radius: 1em;
 }
 .card_link{
   text-decoration: none;
@@ -85,6 +84,7 @@ footer{
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-top: 10em;
 }
 .card{
     display: flex;
@@ -349,23 +349,5 @@ footer{
 }
 
 @media (max-width: 576px) {
-    #img_logo{
-        top: 5%;
-    }
-    .card_green{
-        width: 20em;
-    }
-    .card_red{
-        width: 20em;
-    }
-    .img_pokemon{
-        left: 30%;
-        width: 40%;
-    }
-    #buscador{
-        width: 90%;
-    }
-    .card_holder{
-        margin-right: 20%;
-    }
+    
 }

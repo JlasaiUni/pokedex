@@ -1,32 +1,19 @@
-import p1 from '../data/1.json' with { type: 'json' };
-import p2 from '../data/2.json' with { type: 'json' };
-import p3 from '../data/3.json' with { type: 'json' };
-import p4 from '../data/4.json' with { type: 'json' };
-import p5 from '../data/5.json' with { type: 'json' };
-import p6 from '../data/6.json' with { type: 'json' };
-import p7 from '../data/7.json' with { type: 'json' };
-import p8 from '../data/8.json' with { type: 'json' };
-import p9 from '../data/9.json' with { type: 'json' };
+const pokemons = [];
 
-const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
+async function fetchPokemons() {
+    for (let i = 1; i <= 151; i++) {
+        const p = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`)).json();
+        pokemons.push(p);
+    }
+
+    loadPokemons(pokemons);
+}
 
 const cardHolder = document.getElementById("card_holder");
 const buscador = document.getElementById("buscador");
 const form = document.getElementById("form-busqueda");
 
 const maxStatLimit = 255;
-
-function loadPokemons(pokemons, msg) {
-    
-    cardHolder.innerHTML = "";
-
-    if (pokemons.length > 0) {
-        pokemons.forEach(pokemon => {createPokemonCard(pokemon);});
-    } else {
-        createMissingCard(msg);
-    }
-
-}
 
 function createPokemonCard(pokemon) {
 
@@ -48,7 +35,7 @@ function createPokemonCard(pokemon) {
         <article class="card">
             <header class="card_header">
                 <p class="card_name"><strong>${pokemon.name}</strong></p> 
-                <p class="card_number"><strong>#${pokemon.id}</strong></p>
+                <p class="card_number"><strong>#${String(pokemon.id).padStart(3, '0')}</strong></p>
             </header>
 
             <section class="card_main">
@@ -105,16 +92,16 @@ function createPokemonCard(pokemon) {
     cardHolder.appendChild(card);
 }
 
-function createMissingCard(msg) {
-    const errorCard = document.createElement("div");
-    errorCard.classList.add("card_missing");
+function loadPokemons(pokemons, msg) {
+    
+    cardHolder.innerHTML = "";
 
-    errorCard.innerHTML = `
-        <img src="../img/PokeNot.png" alt="">
-        <p>There is no results for "${msg}".</p>
-    `;
+    if (pokemons.length > 0) {
+        pokemons.forEach(pokemon => {createPokemonCard(pokemon);});
+    } else {
+        createMissingCard(msg);
+    }
 
-    cardHolder.appendChild(errorCard);
 }
 
 form.addEventListener("submit", event => {
@@ -127,4 +114,17 @@ form.addEventListener("submit", event => {
     
 });
 
-loadPokemons(pokemons);
+function createMissingCard(msg) {
+    const errorCard = document.createElement("div");
+    errorCard.classList.add("card_missing");
+
+    errorCard.innerHTML = `
+        <img src="../img/PokeNot.png" alt="">
+        <p>There is no results for "${msg}".</p>
+    `;
+
+    cardHolder.appendChild(errorCard);
+}
+
+
+fetchPokemons();
