@@ -2,10 +2,13 @@ const pokemons = [];
 
 async function fetchPokemons() {
     for (let i = 1; i <= 151; i++) {
-        const p = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`)).json();
-        pokemons.push(p);
+        try {
+            const p = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`)).json();
+            pokemons.push(p);
+        } catch (error) {
+            createErrorCard(error);
+        }
     }
-
     loadPokemons(pokemons);
 }
 
@@ -121,6 +124,20 @@ function createMissingCard(msg) {
     errorCard.innerHTML = `
         <img src="../img/PokeNot.png" alt="">
         <p>There is no results for "${msg}".</p>
+    `;
+
+    cardHolder.appendChild(errorCard);
+}
+function createErrorCard(error) {
+    const errorCard = document.createElement("div");
+    errorCard.classList.add("card_missing");
+
+    cardHolder.innerHTML = "";
+
+    errorCard.innerHTML = `
+        <img src="../img/Alert.png" alt="">
+        <p>An error occurred getting Pokémons.</p>
+        <p>Please, try it later (${error})</p>
     `;
 
     cardHolder.appendChild(errorCard);

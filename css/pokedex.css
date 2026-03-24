@@ -86,6 +86,32 @@ footer{
     align-items: center;
     margin-top: 10em;
 }
+.card_fake{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 15em;
+    height: 20em;
+    margin: 1em;
+    border-radius: 1em;
+    box-shadow: 0 1px 10px rgba(150, 65, 143, 0.299);
+    background-color: white;
+}
+.card_fake_main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 95%;
+    height: 100%;
+    border-radius: 1em;
+    margin: 2.5%;
+    background-color: #EAEAEB;
+}
+.card_fake_main img{
+    width: 7em;
+    height: 7em;
+}
 .card{
     display: flex;
     flex-direction: column;
@@ -349,5 +375,5 @@ footer{
 }
 
 @media (max-width: 576px) {
-    
+
 }

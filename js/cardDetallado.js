@@ -1,22 +1,10 @@
-import p1 from '../data/1.json' with { type: 'json' };
-import p2 from '../data/2.json' with { type: 'json' };
-import p3 from '../data/3.json' with { type: 'json' };
-import p4 from '../data/4.json' with { type: 'json' };
-import p5 from '../data/5.json' with { type: 'json' };
-import p6 from '../data/6.json' with { type: 'json' };
-import p7 from '../data/7.json' with { type: 'json' };
-import p8 from '../data/8.json' with { type: 'json' };
-import p9 from '../data/9.json' with { type: 'json' };
- 
-const pokemons = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
- 
 const cardHolder = document.getElementById("card_detallado_holder");
  
 const maxStatLimit = 255;
 
 const params = new URLSearchParams(window.location.search);
 const id = parseInt(params.get("id"));
-const pokemon = pokemons[id-1];
+const pokemon = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)).json();
 
 if (pokemon) {
     createDetailCard(pokemon);
