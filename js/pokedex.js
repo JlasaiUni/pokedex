@@ -15,6 +15,8 @@ async function fetchPokemons() {
 const cardHolder = document.getElementById("card_holder");
 const buscador = document.getElementById("buscador");
 const form = document.getElementById("form-busqueda");
+const panelFiltros = document.getElementById("panelFiltros");
+const filtroBtn = document.getElementById("filtroBtn");
 
 const maxStatLimit = 255;
 
@@ -98,6 +100,7 @@ function createPokemonCard(pokemon) {
 function loadPokemons(pokemons, msg) {
     
     cardHolder.innerHTML = "";
+    console.log("cargando:", msg);
 
     if (pokemons.length > 0) {
         pokemons.forEach(pokemon => {createPokemonCard(pokemon);});
@@ -128,6 +131,7 @@ function createMissingCard(msg) {
 
     cardHolder.appendChild(errorCard);
 }
+
 function createErrorCard(error) {
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
@@ -143,5 +147,51 @@ function createErrorCard(error) {
     cardHolder.appendChild(errorCard);
 }
 
+let onScreen = 0;
+
+filtroBtn.addEventListener("click", () => {
+    if(onScreen){
+        panelFiltros.innerHTML = "";
+        onScreen = 0;
+    }else{
+        panelFiltros.innerHTML = `
+            <button class="filtro all">all</button>
+            <button class="filtro normal">normal</button>
+            <button class="filtro fire">fire</button>
+            <button class="filtro water">water</button>
+            <button class="filtro electric">electric</button>
+            <button class="filtro grass">grass</button>
+            <button class="filtro ice">ice</button>
+            <button class="filtro fighting">fighting</button>
+            <button class="filtro poison">poison</button>
+            <button class="filtro ground">ground</button>
+            <button class="filtro flying">flying</button>
+            <button class="filtro psychic">psychic</button>
+            <button class="filtro bug">bug</button>
+            <button class="filtro rock">rock</button>
+            <button class="filtro ghost">ghost</button>
+            <button class="filtro dragon">dragon</button>
+            <button class="filtro dark">dark</button>
+            <button class="filtro steel">steel</button>
+            <button class="filtro fairy">fairy</button>
+        `;
+        onScreen = 1;
+    }
+});
+
+panelFiltros.addEventListener("click", (e) => {
+    if (e.target.classList.contains("filtro")) {
+        const tipo = e.target.textContent;
+        if (tipo == "all") {
+            loadPokemons(pokemons, tipo);
+        }else{
+            const filtradosPrimerSlot = pokemons.filter(p => p.types[0].type.name === tipo);
+            const filtradosSegundoSlot = pokemons.filter(p => p.types[1] && p.types[1].type.name === tipo);
+            const filtrados = filtradosPrimerSlot.concat(filtradosSegundoSlot);
+
+            loadPokemons(filtrados, tipo);
+        }
+    }
+});
 
 fetchPokemons();
