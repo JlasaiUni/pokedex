@@ -1,15 +1,85 @@
 const pokemons = [];
+const loadSizePokemon = 1118; //1118 como mucho
+
+/* async function fetchPokemons() {
+    
+    try {
+        const promises = [];
+
+        for (let i = 1; i <= loadSizePokemon; i++) {
+            promises.push(
+                fetch(`https://pokeapi.co/api/v2/pokemon/${i}`).then(res => res.json())
+            );
+        }
+
+        const results = await Promise.all(promises);
+
+        const pokemonsResults = results.map(p => ({
+            id: p.id,
+            name: p.name,
+            weight: p.weight,
+            height: p.height,
+            image: p.sprites.other['official-artwork'].front_default,
+            types: p.types.map(t => t.type.name),
+            stats: {
+                hp: p.stats[0].base_stat,
+                attack: p.stats[1].base_stat,
+                defense: p.stats[2].base_stat,
+                specialAttack: p.stats[3].base_stat,
+                specialDefense: p.stats[4].base_stat,
+                speed: p.stats[5].base_stat,
+            }
+        }));
+
+        pokemons.push(...pokemonsResults);
+
+        loadPokemons(pokemons);
+
+    } catch (error) {
+        createErrorCard(error);
+    }
+
+}*/
 
 async function fetchPokemons() {
-    for (let i = 1; i <= 151; i++) {
-        try {
-            const p = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`)).json();
-            pokemons.push(p);
-        } catch (error) {
-            createErrorCard(error);
+    try {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${loadSizePokemon}`);
+        const data = await response.json();
+
+        const chunkSize = 50;
+
+        for (let i = 0; i < data.results.length; i += chunkSize) {
+            const chunk = data.results.slice(i, i + chunkSize);
+
+            const promises = chunk.map(p =>
+                fetch(p.url).then(res => res.json())
+            );
+
+            const results = await Promise.all(promises);
+
+            const pokemonsResults = results.map(p => ({
+                id: p.id,
+                name: p.name,
+                weight: p.weight,
+                height: p.height,
+                image: p.sprites.other['official-artwork'].front_default,
+                types: p.types.map(t => t.type.name),
+                stats: {
+                    hp: p.stats[0].base_stat,
+                    attack: p.stats[1].base_stat,
+                    defense: p.stats[2].base_stat,
+                    specialAttack: p.stats[3].base_stat,
+                    specialDefense: p.stats[4].base_stat,
+                    speed: p.stats[5].base_stat,
+                }
+            }));
+
+            pokemons.push(...pokemonsResults);
         }
+        loadPokemons(pokemons);
+    } catch (error) {
+        createErrorCard(error);
     }
-    loadPokemons(pokemons);
 }
 
 const cardHolder = document.getElementById("card_holder");
@@ -27,15 +97,6 @@ function createPokemonCard(pokemon) {
     card.classList.add("card_link");
     card.href = "cardDetallado.html?id=" + pokemon.id;
 
-    const stats = {
-        hp : pokemon.stats[0].base_stat,
-        attack : pokemon.stats[1].base_stat,
-        defense : pokemon.stats[2].base_stat,
-        specialAttack : pokemon.stats[3].base_stat,
-        specialDefense : pokemon.stats[4].base_stat,
-        speed : pokemon.stats[5].base_stat,
-    };
-
     card.innerHTML = `
         <article class="card">
             <header class="card_header">
@@ -45,11 +106,11 @@ function createPokemonCard(pokemon) {
 
             <section class="card_main">
                 <img class="img_pokemon" 
-                     src="${pokemon.sprites.other['official-artwork'].front_default}" 
+                     src="${pokemon.image}" 
                      alt="foto de ${pokemon.name}">
 
                 <div class="type_holder">
-                    ${pokemon.types.map(t => `<p class="type type_${t.type.name}">${t.type.name}</p>`).join("")}
+                    ${pokemon.types.map(t => `<p class="type type_${t}">${t}</p>`).join("")}
                 </div>
 
                 <div class="characteristics_holder">
@@ -61,49 +122,54 @@ function createPokemonCard(pokemon) {
                 <div class="stats_holder">
                     <div class="HP">
                         <p class="stat_title">HP</p>
-                        <p class="stat_num">${stats.hp}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.hp / maxStatLimit) * 100}%"></div></div>
+                        <p class="stat_num">${pokemon.stats.hp}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.hp / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="ATK">
                         <p class="stat_title">ATK</p>
-                        <p class="stat_num">${stats.attack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.attack / maxStatLimit) * 100}%"></div></div>
+                        <p class="stat_num">${pokemon.stats.attack}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.attack / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="DEF">
                         <p class="stat_title">DEF</p>
-                        <p class="stat_num">${stats.defense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.defense / maxStatLimit) * 100}%"></div></div>
+                        <p class="stat_num">${pokemon.stats.defense}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.defense / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="SAT">
                         <p class="stat_title">SAT</p>
-                        <p class="stat_num">${stats.specialAttack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialAttack / maxStatLimit) * 100}%"></div></div>
+                        <p class="stat_num">${pokemon.stats.specialAttack}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.specialAttack / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="SDF">
                         <p class="stat_title">SDF</p>
-                        <p class="stat_num">${stats.specialDefense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.specialDefense / maxStatLimit) * 100}%"></div></div>
+                        <p class="stat_num">${pokemon.stats.specialDefense}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.specialDefense / maxStatLimit) * 100}%"></div></div>
                     </div>
                     <div class="SPD">
                         <p class="stat_title">SPD</p>
-                        <p class="stat_num">${stats.speed}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(stats.speed / maxStatLimit) * 100}%"></div></div>
+                        <p class="stat_num">${pokemon.stats.speed}</p>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.speed / maxStatLimit) * 100}%"></div></div>
                     </div>
                 </div>
             </section>
         </article>
     `;
-
-    cardHolder.appendChild(card);
+    return card; 
 }
 
 function loadPokemons(pokemons, msg) {
     
     cardHolder.innerHTML = "";
-    console.log("cargando:", msg);
 
     if (pokemons.length > 0) {
-        pokemons.forEach(pokemon => {createPokemonCard(pokemon);});
+        const cards = document.createDocumentFragment();
+
+        pokemons.forEach(pokemon => {
+            const card = createPokemonCard(pokemon);
+            cards.appendChild(card);
+        });
+
+        cardHolder.appendChild(cards); 
     } else {
         createMissingCard(msg);
     }
@@ -147,12 +213,12 @@ function createErrorCard(error) {
     cardHolder.appendChild(errorCard);
 }
 
-let onScreen = 0;
+let onScreen = false;
 
 filtroBtn.addEventListener("click", () => {
     if(onScreen){
         panelFiltros.innerHTML = "";
-        onScreen = 0;
+        onScreen = false;
     }else{
         panelFiltros.innerHTML = `
             <button class="filtro all">all</button>
@@ -175,19 +241,18 @@ filtroBtn.addEventListener("click", () => {
             <button class="filtro steel">steel</button>
             <button class="filtro fairy">fairy</button>
         `;
-        onScreen = 1;
-    }
-});
+        onScreen = true;
+    } 
+    });
 
 panelFiltros.addEventListener("click", (e) => {
     if (e.target.classList.contains("filtro")) {
         const tipo = e.target.textContent;
-        if (tipo == "all") {
+
+        if (tipo === "all") {
             loadPokemons(pokemons, tipo);
-        }else{
-            const filtradosPrimerSlot = pokemons.filter(p => p.types[0].type.name === tipo);
-            const filtradosSegundoSlot = pokemons.filter(p => p.types[1] && p.types[1].type.name === tipo);
-            const filtrados = filtradosPrimerSlot.concat(filtradosSegundoSlot);
+        } else {
+            const filtrados = pokemons.filter(p => p.types.includes(tipo));
 
             loadPokemons(filtrados, tipo);
         }
