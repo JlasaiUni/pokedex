@@ -10,6 +10,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "dev": "bunx live-sever --port=3000"
+    "build": "bun build ./scripts/ts/pokedex.ts ./scripts/ts/cardDetallado.ts --outdir ./scripts/js --target browser",
+    "dev": "bunx live-server --port=3000"
   }
 }
