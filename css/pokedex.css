@@ -28,7 +28,7 @@ nav{
 #section_busqueda {
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     width: 100%;
     position: relative;
@@ -38,19 +38,18 @@ nav{
     position: relative;
     display: flex;
     align-items: center;
-    margin-left: -25%;
 }
 #filtro_spacer {
     width: 100px; 
 }
 form{
-    width: 100%;
+    width: 40%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
 }
 #buscador{
-    width: 45%;;
+    width: 100%;
     padding: 0.5em;
     margin: 3em;
     margin-right: 0.5em;
@@ -373,9 +372,10 @@ footer{
     margin-right: 5%;
 }
 #filtroBtn {
-    width: 8em;
+    width: 6em;
     height: 2.2em;
     padding: 0.2em 0.5em;
+    margin-right: -3em;
     border-radius: 0.5em;
     background-color: rgba(230, 230, 230, 0.808);
     border: 1px solid rgba(156, 155, 155, 0.637);
@@ -397,7 +397,18 @@ footer{
     border-radius: 0.8em;
     box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     border: 1px solid rgba(156, 155, 155, 0.3);
-    min-width: 130px;
+    min-width: 6em;
+
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#panelFiltros.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 .filtro {
     padding:  0.3em 0.7em;

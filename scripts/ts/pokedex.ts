@@ -104,11 +104,12 @@ function renderPanelFiltros(): void {
 
 function abrirPanel(): void {
     renderPanelFiltros();
+    panelFiltros.classList.add("visible");
     panelVisible = true;
 }
 
 function cerrarPanel(): void {
-    panelFiltros.innerHTML = "";
+    panelFiltros.classList.remove("visible");
     panelVisible = false;
 }
 

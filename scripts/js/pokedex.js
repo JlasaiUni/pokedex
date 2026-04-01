@@ -80,10 +80,11 @@ function renderPanelFiltros() {
 }
 function abrirPanel() {
   renderPanelFiltros();
+  panelFiltros.classList.add("visible");
   panelVisible = true;
 }
 function cerrarPanel() {
-  panelFiltros.innerHTML = "";
+  panelFiltros.classList.remove("visible");
   panelVisible = false;
 }
 filtroBtn.addEventListener("click", (e) => {
