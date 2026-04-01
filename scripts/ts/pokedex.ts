@@ -15,13 +15,14 @@ type Pokemon = {
     };
 };
 
-const TIPOS = ["all","normal","fire","water","electric","grass","ice",
+const TIPOS = ["all","favoritos","normal","fire","water","electric","grass","ice",
                "fighting","poison","ground","flying","psychic","bug",
                "rock","ghost","dragon","dark","steel","fairy"] as const;
 
 type Tipo = typeof TIPOS[number];
 
 const pokemons: Pokemon[] = [];
+const favoritos: Set<number> = new Set();
 const loadSizePokemon = 1118;
 
 let filtroActivo: Tipo = "all";
@@ -85,7 +86,9 @@ async function fetchPokemons(): Promise<void> {
 function aplicarFiltros(): void {
     let resultado = pokemons;
 
-    if (filtroActivo !== "all") {
+    if (filtroActivo === "favoritos") {
+        resultado = resultado.filter(p => favoritos.has(p.id));
+    } else if (filtroActivo !== "all") {
         resultado = resultado.filter(p => p.types.includes(filtroActivo));
     }
 
@@ -159,6 +162,8 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
             </header>
 
             <section class="card_main">
+                <button class="fav_btn ${favoritos.has(pokemon.id) ? 'fav_activo' : ''}" data-id="${pokemon.id}"></button>
+
                 <img class="img_pokemon"
                      src="${pokemon.image}"
                      alt="foto de ${pokemon.name}">
@@ -208,6 +213,22 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
             </section>
         </article>
     `;
+
+    const favBtn = card.querySelector(".fav_btn") as HTMLButtonElement;
+    favBtn.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = parseInt(favBtn.dataset["id"] ?? "0");
+        if (favoritos.has(id)) {
+            favoritos.delete(id);
+            favBtn.classList.remove("fav_activo");
+        } else {
+            favoritos.add(id);
+            favBtn.classList.add("fav_activo");
+        }
+        if (filtroActivo === "favoritos") aplicarFiltros();
+    });
+
     return card;
 }
 

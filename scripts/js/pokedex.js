@@ -1,6 +1,7 @@
 // scripts/ts/pokedex.ts
 var TIPOS = [
   "all",
+  "favoritos",
   "normal",
   "fire",
   "water",
@@ -21,6 +22,7 @@ var TIPOS = [
   "fairy"
 ];
 var pokemons = [];
+var favoritos = new Set;
 var loadSizePokemon = 1118;
 var filtroActivo = "all";
 var busquedaActiva = "";
@@ -65,7 +67,9 @@ async function fetchPokemons() {
 }
 function aplicarFiltros() {
   let resultado = pokemons;
-  if (filtroActivo !== "all") {
+  if (filtroActivo === "favoritos") {
+    resultado = resultado.filter((p) => favoritos.has(p.id));
+  } else if (filtroActivo !== "all") {
     resultado = resultado.filter((p) => p.types.includes(filtroActivo));
   }
   if (busquedaActiva !== "") {
@@ -121,6 +125,8 @@ function createPokemonCard(pokemon) {
             </header>
 
             <section class="card_main">
+                <button class="fav_btn ${favoritos.has(pokemon.id) ? "fav_activo" : ""}" data-id="${pokemon.id}"></button>
+
                 <img class="img_pokemon"
                      src="${pokemon.image}"
                      alt="foto de ${pokemon.name}">
@@ -170,6 +176,21 @@ function createPokemonCard(pokemon) {
             </section>
         </article>
     `;
+  const favBtn = card.querySelector(".fav_btn");
+  favBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = parseInt(favBtn.dataset["id"] ?? "0");
+    if (favoritos.has(id)) {
+      favoritos.delete(id);
+      favBtn.classList.remove("fav_activo");
+    } else {
+      favoritos.add(id);
+      favBtn.classList.add("fav_activo");
+    }
+    if (filtroActivo === "favoritos")
+      aplicarFiltros();
+  });
   return card;
 }
 function loadPokemons(pokemons2, msg) {
