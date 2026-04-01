@@ -22,7 +22,7 @@ var TIPOS = [
   "fairy"
 ];
 var pokemons = [];
-var favoritos = new Set;
+var favoritos = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
 var loadSizePokemon = 1118;
 var filtroActivo = "all";
 var busquedaActiva = "";
@@ -188,6 +188,7 @@ function createPokemonCard(pokemon) {
       favoritos.add(id);
       favBtn.classList.add("fav_activo");
     }
+    localStorage.setItem("favoritos", JSON.stringify([...favoritos]));
     if (filtroActivo === "favoritos")
       aplicarFiltros();
   });

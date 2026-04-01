@@ -22,7 +22,7 @@ const TIPOS = ["all","favoritos","normal","fire","water","electric","grass","ice
 type Tipo = typeof TIPOS[number];
 
 const pokemons: Pokemon[] = [];
-const favoritos: Set<number> = new Set();
+const favoritos: Set<number> = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
 const loadSizePokemon = 1118;
 
 let filtroActivo: Tipo = "all";
@@ -35,9 +35,7 @@ const form = document.getElementById("form-busqueda") as HTMLFormElement;
 const panelFiltros = document.getElementById("panelFiltros") as HTMLElement;
 const filtroBtn = document.getElementById("filtroBtn") as HTMLElement;
 
-const maxStatLimit = 255;
-
-// ── Fetch ────────────────────────────────────────────────────────────────────
+const maxStatLimit = 255; //maximo valor de los stats base de los pokemons
 
 async function fetchPokemons(): Promise<void> {
     try {
@@ -81,8 +79,6 @@ async function fetchPokemons(): Promise<void> {
     }
 }
 
-// ── Filtros ──────────────────────────────────────────────────────────────────
-
 function aplicarFiltros(): void {
     let resultado = pokemons;
 
@@ -99,6 +95,7 @@ function aplicarFiltros(): void {
     loadPokemons(resultado, busquedaActiva || filtroActivo);
 }
 
+//Crear botones de filtros y cambiar estado de activo / inactivo
 function renderPanelFiltros(): void {
     panelFiltros.innerHTML = TIPOS.map(tipo => `
         <button class="filtro ${tipo} ${tipo === filtroActivo ? 'filtro_activo' : ''}">${tipo}</button>
@@ -116,11 +113,13 @@ function cerrarPanel(): void {
     panelVisible = false;
 }
 
+//Abrir panel de filtros
 filtroBtn.addEventListener("click", (e: MouseEvent) => {
     e.stopPropagation();
     panelVisible ? cerrarPanel() : abrirPanel();
 });
 
+//click al boton de un filtro 
 panelFiltros.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
@@ -131,6 +130,7 @@ panelFiltros.addEventListener("click", (e: MouseEvent) => {
     }
 });
 
+//cerrar panel de filtros al clickar fuera
 document.addEventListener("click", (e: MouseEvent) => {
     if (!filtroBtn.contains(e.target as Node) &&
         !panelFiltros.contains(e.target as Node)) {
@@ -138,16 +138,14 @@ document.addEventListener("click", (e: MouseEvent) => {
     }
 });
 
-// ── Buscador ─────────────────────────────────────────────────────────────────
-
-form.addEventListener("submit", (event: Event) => {
+//Buscador
+form.addEventListener("submit", (event: Event) => { 
     event.preventDefault();
     busquedaActiva = buscador.value.toLowerCase();
     aplicarFiltros();
 });
 
-// ── Render ───────────────────────────────────────────────────────────────────
-
+//Crear Card
 function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
     const card = document.createElement("a");
 
@@ -214,6 +212,7 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
         </article>
     `;
 
+    //Click estrella fav
     const favBtn = card.querySelector(".fav_btn") as HTMLButtonElement;
     favBtn.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
@@ -226,12 +225,14 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
             favoritos.add(id);
             favBtn.classList.add("fav_activo");
         }
+        localStorage.setItem("favoritos", JSON.stringify([...favoritos]));
         if (filtroActivo === "favoritos") aplicarFiltros();
     });
 
     return card;
 }
 
+//Llamada para crear ciertos pokemons
 function loadPokemons(pokemons: Pokemon[], msg?: string): void {
     cardHolder.innerHTML = "";
 
@@ -249,6 +250,7 @@ function loadPokemons(pokemons: Pokemon[], msg?: string): void {
     }
 }
 
+//Fallo del buscador
 function createMissingCard(msg?: string): void {
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
@@ -261,6 +263,7 @@ function createMissingCard(msg?: string): void {
     cardHolder.appendChild(errorCard);
 }
 
+//Error de la API
 function createErrorCard(error: unknown): void {
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
