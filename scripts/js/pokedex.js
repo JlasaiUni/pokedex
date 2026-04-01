@@ -1,6 +1,36 @@
 // scripts/ts/pokedex.ts
+var TIPOS = [
+  "all",
+  "normal",
+  "fire",
+  "water",
+  "electric",
+  "grass",
+  "ice",
+  "fighting",
+  "poison",
+  "ground",
+  "flying",
+  "psychic",
+  "bug",
+  "rock",
+  "ghost",
+  "dragon",
+  "dark",
+  "steel",
+  "fairy"
+];
 var pokemons = [];
 var loadSizePokemon = 1118;
+var filtroActivo = "all";
+var busquedaActiva = "";
+var panelVisible = false;
+var cardHolder = document.getElementById("card_holder");
+var buscador = document.getElementById("buscador");
+var form = document.getElementById("form-busqueda");
+var panelFiltros = document.getElementById("panelFiltros");
+var filtroBtn = document.getElementById("filtroBtn");
+var maxStatLimit = 255;
 async function fetchPokemons() {
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${loadSizePokemon}`);
@@ -33,12 +63,51 @@ async function fetchPokemons() {
     createErrorCard(error);
   }
 }
-var cardHolder = document.getElementById("card_holder");
-var buscador = document.getElementById("buscador");
-var form = document.getElementById("form-busqueda");
-var panelFiltros = document.getElementById("panelFiltros");
-var filtroBtn = document.getElementById("filtroBtn");
-var maxStatLimit = 255;
+function aplicarFiltros() {
+  let resultado = pokemons;
+  if (filtroActivo !== "all") {
+    resultado = resultado.filter((p) => p.types.includes(filtroActivo));
+  }
+  if (busquedaActiva !== "") {
+    resultado = resultado.filter((p) => p.name.includes(busquedaActiva));
+  }
+  loadPokemons(resultado, busquedaActiva || filtroActivo);
+}
+function renderPanelFiltros() {
+  panelFiltros.innerHTML = TIPOS.map((tipo) => `
+        <button class="filtro ${tipo} ${tipo === filtroActivo ? "filtro_activo" : ""}">${tipo}</button>
+    `).join("");
+}
+function abrirPanel() {
+  renderPanelFiltros();
+  panelVisible = true;
+}
+function cerrarPanel() {
+  panelFiltros.innerHTML = "";
+  panelVisible = false;
+}
+filtroBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  panelVisible ? cerrarPanel() : abrirPanel();
+});
+panelFiltros.addEventListener("click", (e) => {
+  const target = e.target;
+  if (target.classList.contains("filtro")) {
+    filtroActivo = target.textContent ?? "all";
+    aplicarFiltros();
+    cerrarPanel();
+  }
+});
+document.addEventListener("click", (e) => {
+  if (!filtroBtn.contains(e.target) && !panelFiltros.contains(e.target)) {
+    cerrarPanel();
+  }
+});
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  busquedaActiva = buscador.value.toLowerCase();
+  aplicarFiltros();
+});
 function createPokemonCard(pokemon) {
   const card = document.createElement("a");
   card.classList.add("card_link");
@@ -46,13 +115,13 @@ function createPokemonCard(pokemon) {
   card.innerHTML = `
         <article class="card">
             <header class="card_header">
-                <p class="card_name"><strong>${pokemon.name}</strong></p> 
+                <p class="card_name"><strong>${pokemon.name}</strong></p>
                 <p class="card_number"><strong>#${String(pokemon.id).padStart(3, "0")}</strong></p>
             </header>
 
             <section class="card_main">
-                <img class="img_pokemon" 
-                     src="${pokemon.image}" 
+                <img class="img_pokemon"
+                     src="${pokemon.image}"
                      alt="foto de ${pokemon.name}">
 
                 <div class="type_holder">
@@ -115,12 +184,6 @@ function loadPokemons(pokemons2, msg) {
     createMissingCard(msg);
   }
 }
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const busqueda = buscador.value.toLowerCase();
-  const filtrados = pokemons.filter((pokemon) => pokemon.name.includes(busqueda) || pokemon.id.toString().includes(busqueda));
-  loadPokemons(filtrados, busqueda);
-});
 function createMissingCard(msg) {
   const errorCard = document.createElement("div");
   errorCard.classList.add("card_missing");
@@ -141,46 +204,4 @@ function createErrorCard(error) {
     `;
   cardHolder.appendChild(errorCard);
 }
-var onScreen = false;
-filtroBtn.addEventListener("click", () => {
-  if (onScreen) {
-    panelFiltros.innerHTML = "";
-    onScreen = false;
-  } else {
-    panelFiltros.innerHTML = `
-            <button class="filtro all">all</button>
-            <button class="filtro normal">normal</button>
-            <button class="filtro fire">fire</button>
-            <button class="filtro water">water</button>
-            <button class="filtro electric">electric</button>
-            <button class="filtro grass">grass</button>
-            <button class="filtro ice">ice</button>
-            <button class="filtro fighting">fighting</button>
-            <button class="filtro poison">poison</button>
-            <button class="filtro ground">ground</button>
-            <button class="filtro flying">flying</button>
-            <button class="filtro psychic">psychic</button>
-            <button class="filtro bug">bug</button>
-            <button class="filtro rock">rock</button>
-            <button class="filtro ghost">ghost</button>
-            <button class="filtro dragon">dragon</button>
-            <button class="filtro dark">dark</button>
-            <button class="filtro steel">steel</button>
-            <button class="filtro fairy">fairy</button>
-        `;
-    onScreen = true;
-  }
-});
-panelFiltros.addEventListener("click", (e) => {
-  const target = e.target;
-  if (target.classList.contains("filtro")) {
-    const tipo = target.textContent || "";
-    if (tipo === "all") {
-      loadPokemons(pokemons, tipo);
-    } else {
-      const filtrados = pokemons.filter((p) => p.types.includes(tipo));
-      loadPokemons(filtrados, tipo);
-    }
-  }
-});
 fetchPokemons();
