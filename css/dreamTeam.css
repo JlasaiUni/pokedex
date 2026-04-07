@@ -1,0 +1,29 @@
+main{
+    min-height: 83.8vh;
+    justify-content: center;
+}
+
+#dreamTeam_holder{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 1em;
+    border: 10px solid white;
+    font-weight: bold;
+    font-size: larger;
+    border-radius: 1em;
+    background-color: aquamarine;
+    width: 70vw;
+    height: 70vh;
+}
+#dreamTeam_holder header{
+    background-color: white;
+    border-radius: 0em 0em 1em 1em;
+    padding: 0em 0.5em 0em 0.5em;
+}
+
+#dreamTeam_holder_small{
+    background-color: white;
+    border-radius: 1em 1em 0em 0em;
+    padding: 0em 0.5em 0em 0.5em;
+}
