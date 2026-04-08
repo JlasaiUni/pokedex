@@ -6,24 +6,44 @@ main{
 #dreamTeam_holder{
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     border-radius: 1em;
     border: 10px solid white;
     font-weight: bold;
     font-size: larger;
     border-radius: 1em;
-    background-color: aquamarine;
+    background: linear-gradient(45deg, rgba(255, 0, 0, 0.406), rgba(0, 0, 255, 0.406));
     width: 70vw;
     height: 70vh;
 }
+
 #dreamTeam_holder header{
     background-color: white;
     border-radius: 0em 0em 1em 1em;
     padding: 0em 0.5em 0em 0.5em;
 }
 
+#dreamTeam_main{
+    display: flex;
+    flex-direction: row;
+}
+
+#dreamTeam_main img {
+    width: 8em;
+    height: 8em;
+    object-fit: contain;
+}
+
 #dreamTeam_holder_small{
+    display: flex;
     background-color: white;
     border-radius: 1em 1em 0em 0em;
     padding: 0em 0.5em 0em 0.5em;
+}
+
+#dreamTeam_holder_small img {
+    width: 4em;
+    height: 4em;
+    object-fit: contain;
 }
