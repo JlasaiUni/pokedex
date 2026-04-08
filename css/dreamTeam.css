@@ -27,6 +27,8 @@ main{
 #dreamTeam_main{
     display: flex;
     flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
 }
 
 #dreamTeam_main img {

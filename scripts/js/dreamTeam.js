@@ -34,28 +34,28 @@ function loadPokemons(pokemons2) {
       main.appendChild(card);
       small.appendChild(cardSmall);
     });
-    dreamTeamHolder.style.background = getBackground(pokemons2[0].types[0], pokemons2[2].types[0], pokemons2[5].types[0]);
+    dreamTeamHolder.style.background = getBackgroundFromTeam(pokemons2);
     dreamTeamMain.appendChild(main);
     dreamTeamHolderSmall.appendChild(small);
   }
 }
-var coloresTipo = {
-  fire: "rgba(255, 80, 0, 0.6)",
-  water: "rgba(0, 100, 255, 0.6)",
-  grass: "rgba(0, 200, 0, 0.6)",
-  electric: "rgba(255, 255, 0, 0.6)",
-  psychic: "rgba(255, 0, 150, 0.6)",
-  ice: "rgba(0, 255, 255, 0.6)",
-  dragon: "rgba(100, 0, 255, 0.6)",
-  dark: "rgba(50, 50, 50, 0.6)",
-  fairy: "rgba(255, 150, 255, 0.6)",
-  normal: "rgba(200, 200, 200, 0.6)"
-};
-function getBackground(tipo1, tipo2, tipo3) {
-  const color1 = coloresTipo[tipo1];
-  const color2 = coloresTipo[tipo2];
-  const color3 = coloresTipo[tipo3];
-  return `linear-gradient(45deg, ${color1}, ${color2}, ${color3})`;
+function getColorFromType(type) {
+  const temp = document.createElement("div");
+  temp.className = `type_${type}`;
+  document.body.appendChild(temp);
+  const color = getComputedStyle(temp).getPropertyValue("--type-color");
+  document.body.removeChild(temp);
+  return color.trim();
+}
+function getBackgroundFromTeam(pokemons2) {
+  const colors = [];
+  pokemons2.forEach((pokemon) => {
+    const type = pokemon.types?.[0];
+    if (type) {
+      colors.push(getColorFromType(type));
+    }
+  });
+  return `linear-gradient(135deg, ${colors.join(", ")})`;
 }
 function createdreamTeamImg(pokemon) {
   const card = document.createElement("div");
