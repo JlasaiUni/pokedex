@@ -8,6 +8,7 @@ type Pokemon = {
 
 const pokemons: Pokemon[] = [];
 const favoritos: Set<number> = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
+
 const dreamTeamHolder = document.getElementById("dreamTeam_holder") as HTMLElement;
 const dreamTeamMain = document.getElementById("dreamTeam_main") as HTMLElement;
 const dreamTeamHolderSmall = document.getElementById("dreamTeam_holder_small") as HTMLElement;
