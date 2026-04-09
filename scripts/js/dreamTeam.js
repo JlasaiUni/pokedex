@@ -70,6 +70,8 @@ function createDreamTeamImg(pokemon) {
   img.style.width = `calc(8em * ${sizeMultiplier})`;
   img.style.height = `calc(8em * ${sizeMultiplier})`;
   img.style.zIndex = String(Math.floor(100 - sizeMultiplier));
+  card.style.width = `calc(1em * ${sizeMultiplier * 2})`;
+  card.style.marginLeft = `${3 - sizeMultiplier}em`;
   card.appendChild(img);
   return card;
 }
