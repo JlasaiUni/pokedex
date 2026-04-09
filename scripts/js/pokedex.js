@@ -32,6 +32,7 @@ var buscador = document.getElementById("buscador");
 var form = document.getElementById("form-busqueda");
 var panelFiltros = document.getElementById("panelFiltros");
 var filtroBtn = document.getElementById("filtroBtn");
+var scrollPos = document.scrollingElement;
 var maxStatLimit = 255;
 async function fetchPokemons() {
   try {
@@ -61,6 +62,10 @@ async function fetchPokemons() {
       pokemons.push(...pokemonsResults);
     }
     loadPokemons(pokemons);
+    const savedScroll = sessionStorage.getItem("scrollPos");
+    if (savedScroll) {
+      scrollPos.scrollTop = parseInt(savedScroll);
+    }
   } catch (error) {
     createErrorCard(error);
   }
@@ -194,6 +199,9 @@ function createPokemonCard(pokemon) {
   });
   return card;
 }
+window.addEventListener("scroll", () => {
+  sessionStorage.setItem("scrollPos", String(scrollPos.scrollTop));
+});
 function loadPokemons(pokemons2, msg) {
   cardHolder.innerHTML = "";
   if (pokemons2.length > 0) {

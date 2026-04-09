@@ -107,7 +107,7 @@ function createDetailCard(pokemon: PokemonDetail): void {
                     </div>
                 </div>
 
-                <button id="btn_volver" onclick="history.back()">← Volver</button>
+                <a id="btn_volver" href="pokedex.html" class="btn_volver">← Volver</a>
 
             </section>
         </article>

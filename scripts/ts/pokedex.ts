@@ -34,6 +34,7 @@ const buscador = document.getElementById("buscador") as HTMLInputElement;
 const form = document.getElementById("form-busqueda") as HTMLFormElement;
 const panelFiltros = document.getElementById("panelFiltros") as HTMLElement;
 const filtroBtn = document.getElementById("filtroBtn") as HTMLElement;
+const scrollPos = document.scrollingElement as HTMLElement;
 
 const maxStatLimit = 255; //maximo valor de los stats base de los pokemons
 
@@ -74,6 +75,12 @@ async function fetchPokemons(): Promise<void> {
         }
 
         loadPokemons(pokemons);
+
+        const savedScroll = sessionStorage.getItem("scrollPos");
+        if (savedScroll) {
+            scrollPos.scrollTop = parseInt(savedScroll);
+        }
+        
     } catch (error) {
         createErrorCard(error);
     }
@@ -231,6 +238,11 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
 
     return card;
 }
+
+// Guardar posición al hacer scroll
+window.addEventListener("scroll", () => {
+    sessionStorage.setItem("scrollPos", String(scrollPos.scrollTop));
+});
 
 //Llamada para crear ciertos pokemons
 function loadPokemons(pokemons: Pokemon[], msg?: string): void {
