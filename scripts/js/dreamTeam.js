@@ -15,11 +15,15 @@ async function fetchDreamTeam() {
   const pokemonsResults = results.map((p) => ({
     id: p.id,
     name: p.name,
+    height: p.height,
     image: p.sprites.other["official-artwork"].front_default,
     imageSmall: p.sprites.front_default,
     types: p.types.map((t) => t.type.name)
   }));
-  pokemons.push(...pokemonsResults);
+  pokemonsResults.sort((a, b) => b.height - a.height);
+  const layoutOrder = [0, 2, 4, 5, 3, 1];
+  const orderedTeam = layoutOrder.map((i) => pokemonsResults[i]);
+  pokemons.push(...orderedTeam);
   loadPokemons(pokemons);
 }
 function loadPokemons(pokemons2) {
@@ -29,7 +33,7 @@ function loadPokemons(pokemons2) {
     const main = document.createDocumentFragment();
     const small = document.createDocumentFragment();
     pokemons2.forEach((pokemon) => {
-      const card = createdreamTeamImg(pokemon);
+      const card = createDreamTeamImg(pokemon);
       const cardSmall = createdreamTeamSmallImg(pokemon);
       main.appendChild(card);
       small.appendChild(cardSmall);
@@ -55,14 +59,18 @@ function getBackgroundFromTeam(pokemons2) {
       colors.push(getColorFromType(type));
     }
   });
-  return `linear-gradient(135deg, ${colors.join(", ")})`;
+  return `linear-gradient(45deg, ${colors.join(", ")})`;
 }
-function createdreamTeamImg(pokemon) {
+function createDreamTeamImg(pokemon) {
   const card = document.createElement("div");
-  card.innerHTML = `
-        <img src="${pokemon.image}"
-            alt="foto de ${pokemon.name}">
-    `;
+  const img = document.createElement("img");
+  const sizeMultiplier = Math.min(pokemon.height / 10, 3);
+  img.src = pokemon.image;
+  img.alt = `foto de ${pokemon.name}`;
+  img.style.width = `calc(8em * ${sizeMultiplier})`;
+  img.style.height = `calc(8em * ${sizeMultiplier})`;
+  img.style.zIndex = String(Math.floor(100 - sizeMultiplier));
+  card.appendChild(img);
   return card;
 }
 function createdreamTeamSmallImg(pokemon) {

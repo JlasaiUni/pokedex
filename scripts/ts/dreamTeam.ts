@@ -1,6 +1,7 @@
-type Pokemon = {
+interface Pokemon {
     id: number;
     name: string;
+    height: number;
     image: string;
     imageSmall: string;
     types: string[];
@@ -31,12 +32,18 @@ async function fetchDreamTeam(): Promise<void> {
     const pokemonsResults: Pokemon[] = results.map(p => ({
         id: p.id,
         name: p.name,
+        height: p.height,
         image: p.sprites.other['official-artwork'].front_default,
         imageSmall: p.sprites.front_default,
         types: p.types.map((t: any) => t.type.name)
     }));
 
-    pokemons.push(...pokemonsResults);
+    pokemonsResults.sort((a, b) => b.height - a.height);
+
+    const layoutOrder = [0, 2, 4, 5, 3, 1];
+    const orderedTeam = layoutOrder.map(i => pokemonsResults[i]!);
+
+    pokemons.push(...orderedTeam);
 
     loadPokemons(pokemons);
 }
@@ -51,7 +58,7 @@ function loadPokemons(pokemons: Pokemon[]): void {
         const small = document.createDocumentFragment();
 
         pokemons.forEach(pokemon => {
-            const card = createdreamTeamImg(pokemon);
+            const card = createDreamTeamImg(pokemon);
             const cardSmall = createdreamTeamSmallImg(pokemon);
             main.appendChild(card);
             small.appendChild(cardSmall);
@@ -85,16 +92,22 @@ function getBackgroundFromTeam(pokemons: any[]): string {
     }
   });
 
-  return `linear-gradient(135deg, ${colors.join(", ")})`;
+  return `linear-gradient(45deg, ${colors.join(", ")})`;
 }
 
-function createdreamTeamImg(pokemon: Pokemon): HTMLDivElement {
+function createDreamTeamImg(pokemon: Pokemon): HTMLDivElement {
     const card = document.createElement("div");
+    const img = document.createElement("img");
 
-    card.innerHTML = `
-        <img src="${pokemon.image}"
-            alt="foto de ${pokemon.name}">
-    `;
+    const sizeMultiplier = Math.min(pokemon.height / 10, 3); // maximo 3x
+
+    img.src = pokemon.image;
+    img.alt = `foto de ${pokemon.name}`;
+    img.style.width = `calc(8em * ${sizeMultiplier})`;
+    img.style.height = `calc(8em * ${sizeMultiplier})`;
+    img.style.zIndex = String(Math.floor(100 - sizeMultiplier));
+
+    card.appendChild(img);
     return card;
 }
 
