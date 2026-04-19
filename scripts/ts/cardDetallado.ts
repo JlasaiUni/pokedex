@@ -20,7 +20,7 @@ const cardHolder = document.getElementById("card_detallado_holder") as HTMLEleme
 const maxStatLimit = 255;
 
 const params = new URLSearchParams(window.location.search);
-const id = parseInt(params.get("id") ?? "0");
+const id = parseInt(params.get("id") ?? "0"); //para leer de los query params que pokemon hay que fetchear
 const pokemon = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)).json() as PokemonDetail;
 
 if (pokemon) {

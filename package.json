@@ -4,13 +4,16 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@vitest/coverage-v8": "^4.1.4",
+    "vitest": "^4.1.4"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "scripts": {
-    "build": "bun build ./scripts/ts/pokedex.ts ./scripts/ts/cardDetallado.ts ./scripts/ts/dreamTeam.ts --outdir ./scripts/js --target browser",
-    "dev": "bunx live-server --port=3000"
+    "build": "bun build ./scripts/ts/pokedex.ts ./scripts/ts/cardDetallado.ts ./scripts/ts/dreamTeam.ts ./scripts/ts/funciones.ts --outdir ./scripts/js --target browser",
+    "dev": "bunx live-server --port=3000",
+    "test": "vitest run"
   }
 }

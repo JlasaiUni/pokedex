@@ -1,4 +1,4 @@
-// scripts/ts/pokedex.ts
+// scripts/ts/funciones.ts
 var TIPOS = [
   "all",
   "favoritos",
@@ -21,6 +21,30 @@ var TIPOS = [
   "steel",
   "fairy"
 ];
+var maxStatLimit = 255;
+function filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos) {
+  let resultado = pokemons;
+  if (filtroActivo === "favoritos") {
+    resultado = resultado.filter((p) => favoritos.has(p.id));
+  } else if (filtroActivo !== "all") {
+    resultado = resultado.filter((p) => p.types.includes(filtroActivo));
+  }
+  if (busquedaActiva !== "") {
+    resultado = resultado.filter((p) => p.name.includes(busquedaActiva));
+  }
+  return resultado;
+}
+function toggleFavorito(favoritos, id) {
+  if (favoritos.has(id)) {
+    favoritos.delete(id);
+    return { favoritos, esFavorito: false };
+  } else {
+    favoritos.add(id);
+    return { favoritos, esFavorito: true };
+  }
+}
+
+// scripts/ts/pokedex.ts
 var pokemons = [];
 var favoritos = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
 var loadSizePokemon = 1118;
@@ -33,7 +57,6 @@ var form = document.getElementById("form-busqueda");
 var panelFiltros = document.getElementById("panelFiltros");
 var filtroBtn = document.getElementById("filtroBtn");
 var scrollPos = document.scrollingElement;
-var maxStatLimit = 255;
 async function fetchPokemons() {
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${loadSizePokemon}`);
@@ -71,15 +94,7 @@ async function fetchPokemons() {
   }
 }
 function aplicarFiltros() {
-  let resultado = pokemons;
-  if (filtroActivo === "favoritos") {
-    resultado = resultado.filter((p) => favoritos.has(p.id));
-  } else if (filtroActivo !== "all") {
-    resultado = resultado.filter((p) => p.types.includes(filtroActivo));
-  }
-  if (busquedaActiva !== "") {
-    resultado = resultado.filter((p) => p.name.includes(busquedaActiva));
-  }
+  const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos);
   loadPokemons(resultado, busquedaActiva || filtroActivo);
 }
 function renderPanelFiltros() {

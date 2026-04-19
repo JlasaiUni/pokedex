@@ -1,25 +1,4 @@
-interface Pokemon {
-    id: number;
-    name: string;
-    weight: number;
-    height: number;
-    image: string;
-    types: string[];
-    stats: {
-        hp: number;
-        attack: number;
-        defense: number;
-        specialAttack: number;
-        specialDefense: number;
-        speed: number;
-    };
-};
-
-const TIPOS = ["all","favoritos","normal","fire","water","electric","grass","ice",
-               "fighting","poison","ground","flying","psychic","bug",
-               "rock","ghost","dragon","dark","steel","fairy"] as const;
-
-type Tipo = typeof TIPOS[number];
+import { type Pokemon, TIPOS, type Tipo, maxStatLimit, filtrarPokemons } from "./funciones";
 
 const pokemons: Pokemon[] = [];
 const favoritos: Set<number> = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
@@ -36,7 +15,6 @@ const panelFiltros = document.getElementById("panelFiltros") as HTMLElement;
 const filtroBtn = document.getElementById("filtroBtn") as HTMLElement;
 const scrollPos = document.scrollingElement as HTMLElement;
 
-const maxStatLimit = 255; //maximo valor de los stats base de los pokemons
 
 async function fetchPokemons(): Promise<void> {
     try {
@@ -80,25 +58,14 @@ async function fetchPokemons(): Promise<void> {
         if (savedScroll) {
             scrollPos.scrollTop = parseInt(savedScroll);
         }
-        
+
     } catch (error) {
         createErrorCard(error);
     }
 }
 
 function aplicarFiltros(): void {
-    let resultado = pokemons;
-
-    if (filtroActivo === "favoritos") {
-        resultado = resultado.filter(p => favoritos.has(p.id));
-    } else if (filtroActivo !== "all") {
-        resultado = resultado.filter(p => p.types.includes(filtroActivo));
-    }
-
-    if (busquedaActiva !== "") {
-        resultado = resultado.filter(p => p.name.includes(busquedaActiva));
-    }
-
+    const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos);
     loadPokemons(resultado, busquedaActiva || filtroActivo);
 }
 
@@ -120,7 +87,7 @@ function cerrarPanel(): void {
     panelVisible = false;
 }
 
-//Abrir panel de filtros
+//Boton panel de filtros
 filtroBtn.addEventListener("click", (e: MouseEvent) => {
     e.stopPropagation();
     panelVisible ? cerrarPanel() : abrirPanel();
