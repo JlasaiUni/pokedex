@@ -1,12 +1,15 @@
-import { type Pokemon, TIPOS, type Tipo, maxStatLimit, filtrarPokemons } from "./funciones";
+import { type Pokemon, TIPOS, type Tipo, GENERACIONES, type Generacion, GEN_RANGOS, maxStatLimit, filtrarPokemons, toggleFavorito } from "./funciones";
+
 
 const pokemons: Pokemon[] = [];
 const favoritos: Set<number> = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
 const loadSizePokemon = 1118;
 
 let filtroActivo: Tipo = "all";
+let generacionActiva: Generacion = "all";
 let busquedaActiva: string = "";
 let panelVisible: boolean = false;
+let pestañaActiva: "tipos" | "generaciones" = "tipos";
 
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
 const buscador = document.getElementById("buscador") as HTMLInputElement;
@@ -50,9 +53,9 @@ async function fetchPokemons(): Promise<void> {
             }));
 
             pokemons.push(...pokemonsResults);
-        }
+            loadPokemons(pokemons);
 
-        loadPokemons(pokemons);
+        }
 
         const savedScroll = sessionStorage.getItem("scrollPos");
         if (savedScroll) {
@@ -65,15 +68,28 @@ async function fetchPokemons(): Promise<void> {
 }
 
 function aplicarFiltros(): void {
-    const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos);
+    const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva);
     loadPokemons(resultado, busquedaActiva || filtroActivo);
 }
 
 //Crear botones de filtros y cambiar estado de activo / inactivo
 function renderPanelFiltros(): void {
-    panelFiltros.innerHTML = TIPOS.map(tipo => `
-        <button class="filtro ${tipo} ${tipo === filtroActivo ? 'filtro_activo' : ''}">${tipo}</button>
-    `).join("");
+    panelFiltros.innerHTML = `
+        <div id="panel_tabs">
+            <button class="panel_tab ${pestañaActiva === 'tipos' ? 'panel_tab_activo' : ''}" data-tab="tipos">Types</button>
+            <button class="panel_tab ${pestañaActiva === 'generaciones' ? 'panel_tab_activo' : ''}" data-tab="generaciones">Gen</button>
+        </div>
+        <div id="panel_contenido">
+            ${pestañaActiva === 'tipos'
+                ? TIPOS.map(tipo => `
+                    <button class="filtro_tipo ${tipo} ${tipo === filtroActivo ? 'filtro_activo' : ''}" data-tipo="${tipo}">${tipo}</button>
+                  `).join("")
+                : GENERACIONES.map(gen => `
+                    <button class="filtro_gen ${gen === generacionActiva ? 'filtro_activo' : ''}" data-gen="${gen}">${gen.toUpperCase()}</button>
+                  `).join("")
+            }
+        </div>
+    `;
 }
 
 function abrirPanel(): void {
@@ -97,23 +113,27 @@ filtroBtn.addEventListener("click", (e: MouseEvent) => {
 panelFiltros.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
+    if (target.classList.contains("panel_tab")) {
+        pestañaActiva = target.dataset["tab"] as "tipos" | "generaciones";
+        renderPanelFiltros();
+        return;
+    }
+
     if (target.classList.contains("filtro")) {
-        filtroActivo = (target.textContent ?? "all") as Tipo;
+        filtroActivo = (target.dataset["tipo"] ?? "all") as Tipo;
+        aplicarFiltros();
+        cerrarPanel();
+    }
+
+    if (target.classList.contains("filtro_gen")) {
+        generacionActiva = (target.dataset["gen"] ?? "all") as Generacion;
         aplicarFiltros();
         cerrarPanel();
     }
 });
 
-//cerrar panel de filtros al clickar fuera
-document.addEventListener("click", (e: MouseEvent) => {
-    if (!filtroBtn.contains(e.target as Node) &&
-        !panelFiltros.contains(e.target as Node)) {
-        cerrarPanel();
-    }
-});
-
 //Buscador
-form.addEventListener("submit", (event: Event) => { 
+buscador.addEventListener("input", (event: Event) => { 
     event.preventDefault();
     busquedaActiva = buscador.value.toLowerCase();
     aplicarFiltros();

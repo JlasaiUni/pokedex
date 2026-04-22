@@ -21,13 +21,30 @@ var TIPOS = [
   "steel",
   "fairy"
 ];
+var GENERACIONES = ["all", "gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8", "gen9"];
+var GEN_RANGOS = {
+  all: null,
+  gen1: [1, 151],
+  gen2: [152, 251],
+  gen3: [252, 386],
+  gen4: [387, 493],
+  gen5: [494, 649],
+  gen6: [650, 721],
+  gen7: [722, 809],
+  gen8: [810, 905],
+  gen9: [906, 1025]
+};
 var maxStatLimit = 255;
-function filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos) {
+function filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva = "all") {
   let resultado = pokemons;
   if (filtroActivo === "favoritos") {
     resultado = resultado.filter((p) => favoritos.has(p.id));
   } else if (filtroActivo !== "all") {
     resultado = resultado.filter((p) => p.types.includes(filtroActivo));
+  }
+  const rango = GEN_RANGOS[generacionActiva];
+  if (rango !== null) {
+    resultado = resultado.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
   }
   if (busquedaActiva !== "") {
     resultado = resultado.filter((p) => p.name.includes(busquedaActiva));
@@ -49,8 +66,10 @@ var pokemons = [];
 var favoritos = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
 var loadSizePokemon = 1118;
 var filtroActivo = "all";
+var generacionActiva = "all";
 var busquedaActiva = "";
 var panelVisible = false;
+var pesta_aActiva = "tipos";
 var cardHolder = document.getElementById("card_holder");
 var buscador = document.getElementById("buscador");
 var form = document.getElementById("form-busqueda");
@@ -83,8 +102,8 @@ async function fetchPokemons() {
         }
       }));
       pokemons.push(...pokemonsResults);
+      loadPokemons(pokemons);
     }
-    loadPokemons(pokemons);
     const savedScroll = sessionStorage.getItem("scrollPos");
     if (savedScroll) {
       scrollPos.scrollTop = parseInt(savedScroll);
@@ -94,13 +113,23 @@ async function fetchPokemons() {
   }
 }
 function aplicarFiltros() {
-  const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos);
+  const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva);
   loadPokemons(resultado, busquedaActiva || filtroActivo);
 }
 function renderPanelFiltros() {
-  panelFiltros.innerHTML = TIPOS.map((tipo) => `
-        <button class="filtro ${tipo} ${tipo === filtroActivo ? "filtro_activo" : ""}">${tipo}</button>
-    `).join("");
+  panelFiltros.innerHTML = `
+        <div id="panel_tabs">
+            <button class="panel_tab ${pesta_aActiva === "tipos" ? "panel_tab_activo" : ""}" data-tab="tipos">Types</button>
+            <button class="panel_tab ${pesta_aActiva === "generaciones" ? "panel_tab_activo" : ""}" data-tab="generaciones">Gen</button>
+        </div>
+        <div id="panel_contenido">
+            ${pesta_aActiva === "tipos" ? TIPOS.map((tipo) => `
+                    <button class="filtro_tipo ${tipo} ${tipo === filtroActivo ? "filtro_activo" : ""}" data-tipo="${tipo}">${tipo}</button>
+                  `).join("") : GENERACIONES.map((gen) => `
+                    <button class="filtro_gen ${gen === generacionActiva ? "filtro_activo" : ""}" data-gen="${gen}">${gen.toUpperCase()}</button>
+                  `).join("")}
+        </div>
+    `;
 }
 function abrirPanel() {
   renderPanelFiltros();
@@ -117,18 +146,23 @@ filtroBtn.addEventListener("click", (e) => {
 });
 panelFiltros.addEventListener("click", (e) => {
   const target = e.target;
+  if (target.classList.contains("panel_tab")) {
+    pesta_aActiva = target.dataset["tab"];
+    renderPanelFiltros();
+    return;
+  }
   if (target.classList.contains("filtro")) {
-    filtroActivo = target.textContent ?? "all";
+    filtroActivo = target.dataset["tipo"] ?? "all";
+    aplicarFiltros();
+    cerrarPanel();
+  }
+  if (target.classList.contains("filtro_gen")) {
+    generacionActiva = target.dataset["gen"] ?? "all";
     aplicarFiltros();
     cerrarPanel();
   }
 });
-document.addEventListener("click", (e) => {
-  if (!filtroBtn.contains(e.target) && !panelFiltros.contains(e.target)) {
-    cerrarPanel();
-  }
-});
-form.addEventListener("submit", (event) => {
+buscador.addEventListener("input", (event) => {
   event.preventDefault();
   busquedaActiva = buscador.value.toLowerCase();
   aplicarFiltros();

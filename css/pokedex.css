@@ -224,75 +224,75 @@ footer{
 
 .type_normal {
     --type-color: rgb(200, 200, 180);
-    --type-icon: url("/pokedex/img/normal.png");
+    --type-icon: url("../img/normal.png");
 }
 .type_fire {
     --type-color: rgb(210, 109, 109);
-    --type-icon: url("/pokedex/img/fire.png");
+    --type-icon: url("../img/fire.png");
 }
 .type_water {
     --type-color: rgb(104, 144, 240);
-    --type-icon: url("/pokedex/img/water.png");
+    --type-icon: url("../img/water.png");
 }
 .type_electric {
     --type-color: rgb(248, 208, 48);
-    --type-icon: url("/pokedex/img/electric.png");
+    --type-icon: url("../img/electric.png");
 }
 .type_grass {
     --type-color: rgb(158, 210, 109);
-    --type-icon: url("/pokedex/img/grass.png");
+    --type-icon: url("../img/grass.png");
 }
 .type_ice {
     --type-color: rgb(152, 216, 216);
-    --type-icon: url("/pokedex/img/ice.png");
+    --type-icon: url("../img/ice.png");
 }
 .type_fighting {
     --type-color: rgb(192, 48, 40);
-    --type-icon: url("/pokedex/img/fighting.png");
+    --type-icon: url("../img/fighting.png");
 }
 .type_poison {
     --type-color: rgb(161, 109, 210);
-    --type-icon: url("/pokedex/img/poison.png");
+    --type-icon: url("../img/poison.png");
 }
 .type_ground {
     --type-color: rgb(224, 192, 104);
-    --type-icon: url("/pokedex/img/ground.png");
+    --type-icon: url("../img/ground.png");
 }
 .type_flying {
     --type-color: rgb(143, 175, 190);
-    --type-icon: url("/pokedex/img/flying-type.png");
+    --type-icon: url("../img/flying-type.png");
 }
 .type_psychic {
     --type-color: rgb(248, 88, 136);
-    --type-icon: url("/pokedex/img/psychic.png");
+    --type-icon: url("../img/psychic.png");
 }
 .type_bug {
     --type-color: rgb(168, 184, 32);
-    --type-icon: url("/pokedex/img/bug.png");
+    --type-icon: url("../img/bug.png");
 }
 .type_rock {
     --type-color: rgb(184, 160, 56);
-    --type-icon: url("/pokedex/img/rock.png");
+    --type-icon: url("../img/rock.png");
 }
 .type_ghost {
     --type-color: rgb(112, 88, 152);
-    --type-icon: url("/pokedex/img/ghost.png");
+    --type-icon: url("../img/ghost.png");
 }
 .type_dragon {
     --type-color: rgb(112, 56, 248);
-    --type-icon: url("/pokedex/img/dragon.png");
+    --type-icon: url("../img/dragon.png");
 }
 .type_dark {
     --type-color: rgb(112, 88, 72);
-    --type-icon: url("/pokedex/img/dark.png");
+    --type-icon: url("../img/dark.png");
 }
 .type_steel {
     --type-color: rgb(184, 184, 208);
-    --type-icon: url("/pokedex/img/steel.png");
+    --type-icon: url("../img/steel.png");
 }
 .type_fairy {
     --type-color: rgb(238, 153, 172);
-    --type-icon: url("/pokedex/img/fairy.png");
+    --type-icon: url("../img/fairy.png");
 }
 
 .characteristics_holder{
@@ -312,7 +312,7 @@ footer{
     display: inline-block;
     width: 2em;
     height: 2em;
-    background-image: url("/pokedex/img/icono-peso.png");
+    background-image: url("../img/icono-peso.png");
     background-size: contain;
     background-repeat: no-repeat;
     margin-top: 0.4em;
@@ -323,7 +323,7 @@ footer{
     display: inline-block;
     width: 2.2em;
     height: 2em;
-    background-image: url("/pokedex/img/icono-altura.png");
+    background-image: url("../img/icono-altura.png");
     background-size: contain;
     background-repeat: no-repeat;
     margin-top: 0.2em;
@@ -411,16 +411,74 @@ footer{
     pointer-events: auto;
     transform: translateY(0);
 }
-.filtro {
-    padding:  0.3em 0.7em;
-    border: none;
-    border-radius: 0.5em;
-    background-color: rgba(230, 230, 230, 0.808);
-    border: 1px solid rgba(156, 155, 155, 0.637);
-    color: rgba(156, 155, 155, 0.637);
+
+#panel_contenido{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap:2px;
 }
 
-.filtro:hover {
+.filtro_tipo {
+    padding: 0.3em 0.7em;
+    width: 90%;
+    border: 1px solid rgba(156, 155, 155, 0.637);
+    border-radius: 0.5em;
+    background-color: rgba(230, 230, 230, 0.808);
+    color: rgba(156, 155, 155, 0.637);
+    cursor: pointer;
+    font-size: 100%;
+    font-weight: 600;
+}
+
+.filtro_tipo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+#panel_tabs {
+    display: flex;
+    gap: 0.3em;
+    margin-bottom: 0.4em;
+    border-bottom: 1px solid rgba(156, 155, 155, 0.3);
+    padding-bottom: 0.4em;
+}
+
+.panel_tab {
+    flex: 1;
+    padding: 0.3em 0.5em;
+    border: none;
+    border-radius: 0.5em;
+    background-color: transparent;
+    color: rgba(156, 155, 155, 0.8);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 90%;
+}
+
+.panel_tab:hover {
+    background-color: rgba(230, 230, 230, 0.6);
+}
+
+.panel_tab_activo {
+    background-color: rgba(230, 230, 230, 0.808);
+    color: rgba(80, 80, 80, 0.9);
+    border: 1px solid rgba(156, 155, 155, 0.637);
+}
+
+.filtro_gen {
+    padding: 0.3em 0.7em;
+    width: 90%;
+    border: 1px solid rgba(156, 155, 155, 0.637);
+    border-radius: 0.5em;
+    background-color: rgba(230, 230, 230, 0.808);
+    color: rgba(156, 155, 155, 0.637);
+    cursor: pointer;
+    font-size: 85%;
+    font-weight: 600;
+}
+
+.filtro_gen:hover {
     transform: translateY(-2px);
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
@@ -439,7 +497,7 @@ footer{
     height: 1.6em;
     border: none;
     background-color: transparent;
-    background-image: url("/pokedex/img/notFav.png");
+    background-image: url("../img/notFav.png");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -458,7 +516,7 @@ footer{
 }
 
 .fav_btn.fav_activo {
-    background-image: url("/pokedex/img/fav.png");
+    background-image: url("../img/fav.png");
 }
 
 #img_logo{
