@@ -103,6 +103,8 @@ main{
         margin-top: 1em;
         flex-direction: row;
         justify-content: space-between;
+        margin-left: 1em;
+        margin-right: 1em;
     }
 
     .pokedex_design_left {

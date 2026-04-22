@@ -19,7 +19,8 @@ var TIPOS = [
   "dragon",
   "dark",
   "steel",
-  "fairy"
+  "fairy",
+  "especiales"
 ];
 var GENERACIONES = ["all", "gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8", "gen9"];
 var GEN_RANGOS = {
@@ -39,11 +40,13 @@ function filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, gene
   let resultado = pokemons;
   if (filtroActivo === "favoritos") {
     resultado = resultado.filter((p) => favoritos.has(p.id));
+  } else if (filtroActivo === "especiales") {
+    resultado = resultado.filter((p) => p.id >= 1e4);
   } else if (filtroActivo !== "all") {
     resultado = resultado.filter((p) => p.types.includes(filtroActivo));
   }
   const rango = GEN_RANGOS[generacionActiva];
-  if (rango !== null) {
+  if (rango !== null && filtroActivo !== "especiales") {
     resultado = resultado.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
   }
   if (busquedaActiva !== "") {

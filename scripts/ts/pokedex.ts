@@ -119,7 +119,7 @@ panelFiltros.addEventListener("click", (e: MouseEvent) => {
         return;
     }
 
-    if (target.classList.contains("filtro")) {
+    if (target.classList.contains("filtro_tipo")) {
         filtroActivo = (target.dataset["tipo"] ?? "all") as Tipo;
         aplicarFiltros();
         cerrarPanel();

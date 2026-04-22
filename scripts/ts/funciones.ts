@@ -17,7 +17,7 @@ export interface Pokemon {
 
 export const TIPOS = ["all","favoritos","normal","fire","water","electric","grass","ice",
                "fighting","poison","ground","flying","psychic","bug",
-               "rock","ghost","dragon","dark","steel","fairy"] as const;
+               "rock","ghost","dragon","dark","steel","fairy", "especiales"] as const;
 
 export type Tipo = typeof TIPOS[number];
 
@@ -40,23 +40,19 @@ export const GEN_RANGOS: Record<Generacion, [number, number] | null> = {
 
 export const maxStatLimit = 255;
 
-export function filtrarPokemons(
-    pokemons: Pokemon[],
-    filtroActivo: Tipo,
-    busquedaActiva: string,
-    favoritos: Set<number>,
-    generacionActiva: Generacion = "all"
-): Pokemon[] {
+export function filtrarPokemons(pokemons: Pokemon[], filtroActivo: Tipo, busquedaActiva: string, favoritos: Set<number>, generacionActiva: Generacion = "all"): Pokemon[] {
     let resultado = pokemons;
 
     if (filtroActivo === "favoritos") {
         resultado = resultado.filter(p => favoritos.has(p.id));
-    } else if (filtroActivo !== "all") {
+    } else if (filtroActivo === "especiales") {
+        resultado = resultado.filter(p => (p.id >= 10000));
+    }else if (filtroActivo !== "all") {
         resultado = resultado.filter(p => p.types.includes(filtroActivo));
     }
 
     const rango = GEN_RANGOS[generacionActiva];
-    if (rango !== null) {
+    if (rango !== null && filtroActivo !== "especiales") {
         resultado = resultado.filter(p => p.id >= rango[0] && p.id <= rango[1]);
     }
 
