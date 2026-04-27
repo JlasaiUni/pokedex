@@ -139,7 +139,7 @@ describe("TIPOS", () => {
         expect(TIPOS).toContain("favoritos");
     });
 
-    it("contiene los 18 tipos estándar de Pokémon más all y favoritos", () => {
-        expect(TIPOS).toHaveLength(20);
+    it("contiene los 18 tipos estándar de Pokémon más all, favoritos y especiales", () => {
+        expect(TIPOS).toHaveLength(21);
     });
 });

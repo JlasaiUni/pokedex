@@ -53,24 +53,20 @@ async function fetchPokemons(): Promise<void> {
             }));
 
             pokemons.push(...pokemonsResults);
-            loadPokemons(pokemons);
-
         }
+        loadPokemons(pokemons);
 
         const savedScroll = sessionStorage.getItem("scrollPos");
         if (savedScroll) {
-            scrollPos.scrollTop = parseInt(savedScroll);
+            window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
+            console.log(savedScroll);
         }
-
     } catch (error) {
         createErrorCard(error);
     }
 }
 
-function aplicarFiltros(): void {
-    const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva);
-    loadPokemons(resultado, busquedaActiva || filtroActivo);
-}
+
 
 //Crear botones de filtros y cambiar estado de activo / inactivo
 function renderPanelFiltros(): void {
@@ -138,6 +134,11 @@ buscador.addEventListener("input", (event: Event) => {
     busquedaActiva = buscador.value.toLowerCase();
     aplicarFiltros();
 });
+
+export function aplicarFiltros(): void {
+    const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva);
+    loadPokemons(resultado, busquedaActiva || filtroActivo);
+}
 
 //Crear Card
 function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
@@ -226,9 +227,15 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
     return card;
 }
 
-// Guardar posición al hacer scroll
+let lastSaved = 0;
+
 window.addEventListener("scroll", () => {
-    sessionStorage.setItem("scrollPos", String(scrollPos.scrollTop));
+    const scrollTop = window.scrollY;
+    if (scrollTop - lastSaved >= 10 || lastSaved - scrollTop >= 10) {
+        lastSaved = scrollTop;
+        sessionStorage.setItem("scrollPos", String(Math.floor(scrollTop)));
+        console.log(String(Math.floor(scrollTop)));
+    }
 });
 
 //Llamada para crear ciertos pokemons
@@ -247,6 +254,25 @@ function loadPokemons(pokemons: Pokemon[], msg?: string): void {
     } else {
         createMissingCard(msg);
     }
+}
+
+//Crear FAKE Card
+function createFakeCard(amount: number): void {
+    cardHolder.innerHTML = "";
+    const cards = document.createDocumentFragment();
+
+    for (let i = 0; i <= amount; i++) {
+        const card = document.createElement("div");
+
+        card.classList.add("card_fake");
+        card.innerHTML = `
+            <section class="card_fake_main"><img src="../img/Pokeball.png" alt=""></section>
+        `;
+
+        cards.appendChild(card);
+    }
+
+    cardHolder.appendChild(cards);
 }
 
 //Fallo del buscador
@@ -277,5 +303,5 @@ function createErrorCard(error: unknown): void {
 
     cardHolder.appendChild(errorCard);
 }
-
+createFakeCard(loadSizePokemon);
 fetchPokemons();

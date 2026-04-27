@@ -105,11 +105,12 @@ async function fetchPokemons() {
         }
       }));
       pokemons.push(...pokemonsResults);
-      loadPokemons(pokemons);
     }
+    loadPokemons(pokemons);
     const savedScroll = sessionStorage.getItem("scrollPos");
     if (savedScroll) {
-      scrollPos.scrollTop = parseInt(savedScroll);
+      window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
+      console.log(savedScroll);
     }
   } catch (error) {
     createErrorCard(error);
@@ -251,8 +252,14 @@ function createPokemonCard(pokemon) {
   });
   return card;
 }
+var lastSaved = 0;
 window.addEventListener("scroll", () => {
-  sessionStorage.setItem("scrollPos", String(scrollPos.scrollTop));
+  const scrollTop = window.scrollY;
+  if (scrollTop - lastSaved >= 10 || lastSaved - scrollTop >= 10) {
+    lastSaved = scrollTop;
+    sessionStorage.setItem("scrollPos", String(Math.floor(scrollTop)));
+    console.log(String(Math.floor(scrollTop)));
+  }
 });
 function loadPokemons(pokemons2, msg) {
   cardHolder.innerHTML = "";
@@ -266,6 +273,19 @@ function loadPokemons(pokemons2, msg) {
   } else {
     createMissingCard(msg);
   }
+}
+function createFakeCard(amount) {
+  cardHolder.innerHTML = "";
+  const cards = document.createDocumentFragment();
+  for (let i = 0;i <= amount; i++) {
+    const card = document.createElement("div");
+    card.classList.add("card_fake");
+    card.innerHTML = `
+            <section class="card_fake_main"><img src="../img/Pokeball.png" alt=""></section>
+        `;
+    cards.appendChild(card);
+  }
+  cardHolder.appendChild(cards);
 }
 function createMissingCard(msg) {
   const errorCard = document.createElement("div");
@@ -287,4 +307,5 @@ function createErrorCard(error) {
     `;
   cardHolder.appendChild(errorCard);
 }
+createFakeCard(loadSizePokemon);
 fetchPokemons();
