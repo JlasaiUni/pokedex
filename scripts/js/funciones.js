@@ -1,7 +1,7 @@
 // scripts/ts/funciones.ts
-var TIPOS = [
+var POKEMON_TYPES = [
   "all",
-  "favoritos",
+  "favourites",
   "normal",
   "fire",
   "water",
@@ -20,10 +20,10 @@ var TIPOS = [
   "dark",
   "steel",
   "fairy",
-  "especiales"
+  "special"
 ];
-var GENERACIONES = ["all", "gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8", "gen9"];
-var GEN_RANGOS = {
+var GENERATIONS = ["all", "gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8", "gen9"];
+var GEN_RANGES = {
   all: null,
   gen1: [1, 151],
   gen2: [152, 251],
@@ -35,39 +35,40 @@ var GEN_RANGOS = {
   gen8: [810, 905],
   gen9: [906, 1025]
 };
-var maxStatLimit = 255;
-function filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva = "all") {
-  let resultado = pokemons;
-  if (filtroActivo === "favoritos") {
-    resultado = resultado.filter((p) => favoritos.has(p.id));
-  } else if (filtroActivo === "especiales") {
-    resultado = resultado.filter((p) => p.id >= 1e4);
-  } else if (filtroActivo !== "all") {
-    resultado = resultado.filter((p) => p.types.includes(filtroActivo));
+var MAX_STAT_LIMIT = 255;
+var SPECIAL_POKEMON_THRESHOLD = 1e4;
+function filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration = "all") {
+  let result = pokemons;
+  if (activeFilter === "favourites") {
+    result = result.filter((p) => favourites.has(p.id));
+  } else if (activeFilter === "special") {
+    result = result.filter((p) => p.id >= SPECIAL_POKEMON_THRESHOLD);
+  } else if (activeFilter !== "all") {
+    result = result.filter((p) => p.types.includes(activeFilter));
   }
-  const rango = GEN_RANGOS[generacionActiva];
-  if (rango !== null && filtroActivo !== "especiales") {
-    resultado = resultado.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
+  const rango = GEN_RANGES[activeGeneration];
+  if (rango !== null && activeFilter !== "special") {
+    result = result.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
   }
-  if (busquedaActiva !== "") {
-    resultado = resultado.filter((p) => p.name.includes(busquedaActiva));
+  if (activeSearch) {
+    result = result.filter((p) => p.name.includes(activeSearch));
   }
-  return resultado;
+  return result;
 }
-function toggleFavorito(favoritos, id) {
-  if (favoritos.has(id)) {
-    favoritos.delete(id);
-    return { favoritos, esFavorito: false };
+function toggleFavorite(favourites, id) {
+  if (favourites.has(id)) {
+    favourites.delete(id);
+    return { favourites, isFavourite: false };
   } else {
-    favoritos.add(id);
-    return { favoritos, esFavorito: true };
+    favourites.add(id);
+    return { favourites, isFavourite: true };
   }
 }
 export {
-  toggleFavorito,
-  maxStatLimit,
-  filtrarPokemons,
-  TIPOS,
-  GEN_RANGOS,
-  GENERACIONES
+  toggleFavorite,
+  filterPokemons,
+  POKEMON_TYPES,
+  MAX_STAT_LIMIT,
+  GEN_RANGES,
+  GENERATIONS
 };

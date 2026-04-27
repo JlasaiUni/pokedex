@@ -1,7 +1,7 @@
 // scripts/ts/funciones.ts
-var TIPOS = [
+var POKEMON_TYPES = [
   "all",
-  "favoritos",
+  "favourites",
   "normal",
   "fire",
   "water",
@@ -20,10 +20,10 @@ var TIPOS = [
   "dark",
   "steel",
   "fairy",
-  "especiales"
+  "special"
 ];
-var GENERACIONES = ["all", "gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8", "gen9"];
-var GEN_RANGOS = {
+var GENERATIONS = ["all", "gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8", "gen9"];
+var GEN_RANGES = {
   all: null,
   gen1: [1, 151],
   gen2: [152, 251],
@@ -35,57 +35,57 @@ var GEN_RANGOS = {
   gen8: [810, 905],
   gen9: [906, 1025]
 };
-var maxStatLimit = 255;
-function filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva = "all") {
-  let resultado = pokemons;
-  if (filtroActivo === "favoritos") {
-    resultado = resultado.filter((p) => favoritos.has(p.id));
-  } else if (filtroActivo === "especiales") {
-    resultado = resultado.filter((p) => p.id >= 1e4);
-  } else if (filtroActivo !== "all") {
-    resultado = resultado.filter((p) => p.types.includes(filtroActivo));
+var MAX_STAT_LIMIT = 255;
+var SPECIAL_POKEMON_THRESHOLD = 1e4;
+function filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration = "all") {
+  let result = pokemons;
+  if (activeFilter === "favourites") {
+    result = result.filter((p) => favourites.has(p.id));
+  } else if (activeFilter === "special") {
+    result = result.filter((p) => p.id >= SPECIAL_POKEMON_THRESHOLD);
+  } else if (activeFilter !== "all") {
+    result = result.filter((p) => p.types.includes(activeFilter));
   }
-  const rango = GEN_RANGOS[generacionActiva];
-  if (rango !== null && filtroActivo !== "especiales") {
-    resultado = resultado.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
+  const rango = GEN_RANGES[activeGeneration];
+  if (rango !== null && activeFilter !== "special") {
+    result = result.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
   }
-  if (busquedaActiva !== "") {
-    resultado = resultado.filter((p) => p.name.includes(busquedaActiva));
+  if (activeSearch) {
+    result = result.filter((p) => p.name.includes(activeSearch));
   }
-  return resultado;
+  return result;
 }
-function toggleFavorito(favoritos, id) {
-  if (favoritos.has(id)) {
-    favoritos.delete(id);
-    return { favoritos, esFavorito: false };
+function toggleFavorite(favourites, id) {
+  if (favourites.has(id)) {
+    favourites.delete(id);
+    return { favourites, isFavourite: false };
   } else {
-    favoritos.add(id);
-    return { favoritos, esFavorito: true };
+    favourites.add(id);
+    return { favourites, isFavourite: true };
   }
 }
 
 // scripts/ts/pokedex.ts
 var pokemons = [];
-var favoritos = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
-var loadSizePokemon = 1118;
-var filtroActivo = "all";
-var generacionActiva = "all";
-var busquedaActiva = "";
-var panelVisible = false;
-var pesta_aActiva = "tipos";
+var favourites = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
+var LOAD_SIZE_POKEMONS = 1118;
+var SCROLL_SAVE_THRESHOLD = 10;
+var activeFilter = "all";
+var activeGeneration = "all";
+var activeSearch = "";
+var isPanelOpen = false;
+var activeTab = "types";
 var cardHolder = document.getElementById("card_holder");
-var buscador = document.getElementById("buscador");
-var form = document.getElementById("form-busqueda");
-var panelFiltros = document.getElementById("panelFiltros");
-var filtroBtn = document.getElementById("filtroBtn");
-var scrollPos = document.scrollingElement;
+var searchInput = document.getElementById("searchInput");
+var filter_panel = document.getElementById("filter_panel");
+var filter_button = document.getElementById("filter_button");
 async function fetchPokemons() {
   try {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${loadSizePokemon}`);
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
     const data = await response.json();
-    const chunkSize = 50;
-    for (let i = 0;i < data.results.length; i += chunkSize) {
-      const chunk = data.results.slice(i, i + chunkSize);
+    const LOAD_CHUNK_SIZE = 50;
+    for (let i = 0;i < data.results.length; i += LOAD_CHUNK_SIZE) {
+      const chunk = data.results.slice(i, i + LOAD_CHUNK_SIZE);
       const promises = chunk.map((p) => fetch(p.url).then((res) => res.json()));
       const results = await Promise.all(promises);
       const pokemonsResults = results.map((p) => ({
@@ -107,70 +107,72 @@ async function fetchPokemons() {
       pokemons.push(...pokemonsResults);
     }
     loadPokemons(pokemons);
-    const savedScroll = sessionStorage.getItem("scrollPos");
-    if (savedScroll) {
-      window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
-      console.log(savedScroll);
-    }
+    restoreScroll();
   } catch (error) {
     createErrorCard(error);
   }
 }
-function aplicarFiltros() {
-  const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva);
-  loadPokemons(resultado, busquedaActiva || filtroActivo);
+function restoreScroll() {
+  const savedScroll = sessionStorage.getItem("scrollPos");
+  if (savedScroll !== null) {
+    window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
+  }
 }
 function renderPanelFiltros() {
-  panelFiltros.innerHTML = `
+  filter_panel.innerHTML = `
         <div id="panel_tabs">
-            <button class="panel_tab ${pesta_aActiva === "tipos" ? "panel_tab_activo" : ""}" data-tab="tipos">Types</button>
-            <button class="panel_tab ${pesta_aActiva === "generaciones" ? "panel_tab_activo" : ""}" data-tab="generaciones">Gen</button>
+            <button class="panel_tab ${activeTab === "types" ? "panel_tab_activo" : ""}" data-tab="types">Types</button>
+            <button class="panel_tab ${activeTab === "generations" ? "panel_tab_activo" : ""}" data-tab="generations">Gen</button>
         </div>
-        <div id="panel_contenido">
-            ${pesta_aActiva === "tipos" ? TIPOS.map((tipo) => `
-                    <button class="filtro_tipo ${tipo} ${tipo === filtroActivo ? "filtro_activo" : ""}" data-tipo="${tipo}">${tipo}</button>
-                  `).join("") : GENERACIONES.map((gen) => `
-                    <button class="filtro_gen ${gen === generacionActiva ? "filtro_activo" : ""}" data-gen="${gen}">${gen.toUpperCase()}</button>
+        <div id="panel_content">
+            ${activeTab === "types" ? POKEMON_TYPES.map((tipo) => `
+                    <button class="filtro_tipo ${tipo} ${tipo === activeFilter ? "filtro_activo" : ""}" data-tipo="${tipo}">${tipo}</button>
+                  `).join("") : GENERATIONS.map((gen) => `
+                    <button class="filtro_gen ${gen === activeGeneration ? "filtro_activo" : ""}" data-gen="${gen}">${gen.toUpperCase()}</button>
                   `).join("")}
         </div>
     `;
 }
-function abrirPanel() {
+function openPanel() {
   renderPanelFiltros();
-  panelFiltros.classList.add("visible");
-  panelVisible = true;
+  filter_panel.classList.add("visible");
+  isPanelOpen = true;
 }
-function cerrarPanel() {
-  panelFiltros.classList.remove("visible");
-  panelVisible = false;
+function closePanel() {
+  filter_panel.classList.remove("visible");
+  isPanelOpen = false;
 }
-filtroBtn.addEventListener("click", (e) => {
+filter_button.addEventListener("click", (e) => {
   e.stopPropagation();
-  panelVisible ? cerrarPanel() : abrirPanel();
+  isPanelOpen ? closePanel() : openPanel();
 });
-panelFiltros.addEventListener("click", (e) => {
+filter_panel.addEventListener("click", (e) => {
   const target = e.target;
   if (target.classList.contains("panel_tab")) {
-    pesta_aActiva = target.dataset["tab"];
+    activeTab = target.dataset["tab"];
     renderPanelFiltros();
     return;
   }
   if (target.classList.contains("filtro_tipo")) {
-    filtroActivo = target.dataset["tipo"] ?? "all";
-    aplicarFiltros();
-    cerrarPanel();
+    activeFilter = target.dataset["tipo"] ?? "all";
+    applyFilters();
+    closePanel();
   }
   if (target.classList.contains("filtro_gen")) {
-    generacionActiva = target.dataset["gen"] ?? "all";
-    aplicarFiltros();
-    cerrarPanel();
+    activeGeneration = target.dataset["gen"] ?? "all";
+    applyFilters();
+    closePanel();
   }
 });
-buscador.addEventListener("input", (event) => {
+searchInput.addEventListener("input", (event) => {
   event.preventDefault();
-  busquedaActiva = buscador.value.toLowerCase();
-  aplicarFiltros();
+  activeSearch = searchInput.value.toLowerCase();
+  applyFilters();
 });
+function applyFilters() {
+  const resultado = filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration);
+  loadPokemons(resultado, activeSearch || activeFilter);
+}
 function createPokemonCard(pokemon) {
   const card = document.createElement("a");
   card.classList.add("card_link");
@@ -183,7 +185,7 @@ function createPokemonCard(pokemon) {
             </header>
 
             <section class="card_main">
-                <button class="fav_btn ${favoritos.has(pokemon.id) ? "fav_activo" : ""}" data-id="${pokemon.id}"></button>
+                <button class="fav_btn ${favourites.has(pokemon.id) ? "fav_activo" : ""}" data-id="${pokemon.id}"></button>
 
                 <img class="img_pokemon"
                      src="${pokemon.image}"
@@ -203,32 +205,32 @@ function createPokemonCard(pokemon) {
                     <div class="HP">
                         <p class="stat_title">HP</p>
                         <p class="stat_num">${pokemon.stats.hp}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.hp / maxStatLimit * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.hp / MAX_STAT_LIMIT * 100}%"></div></div>
                     </div>
                     <div class="ATK">
                         <p class="stat_title">ATK</p>
                         <p class="stat_num">${pokemon.stats.attack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.attack / maxStatLimit * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.attack / MAX_STAT_LIMIT * 100}%"></div></div>
                     </div>
                     <div class="DEF">
                         <p class="stat_title">DEF</p>
                         <p class="stat_num">${pokemon.stats.defense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.defense / maxStatLimit * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.defense / MAX_STAT_LIMIT * 100}%"></div></div>
                     </div>
                     <div class="SAT">
                         <p class="stat_title">SAT</p>
                         <p class="stat_num">${pokemon.stats.specialAttack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.specialAttack / maxStatLimit * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.specialAttack / MAX_STAT_LIMIT * 100}%"></div></div>
                     </div>
                     <div class="SDF">
                         <p class="stat_title">SDF</p>
                         <p class="stat_num">${pokemon.stats.specialDefense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.specialDefense / maxStatLimit * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.specialDefense / MAX_STAT_LIMIT * 100}%"></div></div>
                     </div>
                     <div class="SPD">
                         <p class="stat_title">SPD</p>
                         <p class="stat_num">${pokemon.stats.speed}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.speed / maxStatLimit * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${pokemon.stats.speed / MAX_STAT_LIMIT * 100}%"></div></div>
                     </div>
                 </div>
             </section>
@@ -239,26 +241,20 @@ function createPokemonCard(pokemon) {
     e.preventDefault();
     e.stopPropagation();
     const id = parseInt(favBtn.dataset["id"] ?? "0");
-    if (favoritos.has(id)) {
-      favoritos.delete(id);
-      favBtn.classList.remove("fav_activo");
-    } else {
-      favoritos.add(id);
-      favBtn.classList.add("fav_activo");
-    }
-    localStorage.setItem("favoritos", JSON.stringify([...favoritos]));
-    if (filtroActivo === "favoritos")
-      aplicarFiltros();
+    const { isFavourite } = toggleFavorite(favourites, id);
+    favBtn.classList.toggle("fav_activo", isFavourite);
+    localStorage.setItem("favourites", JSON.stringify([...favourites]));
+    if (activeFilter === "favourites")
+      applyFilters();
   });
   return card;
 }
-var lastSaved = 0;
+var lastSavedScroll = 0;
 window.addEventListener("scroll", () => {
   const scrollTop = window.scrollY;
-  if (scrollTop - lastSaved >= 10 || lastSaved - scrollTop >= 10) {
-    lastSaved = scrollTop;
+  if (scrollTop - lastSavedScroll >= SCROLL_SAVE_THRESHOLD || lastSavedScroll - scrollTop >= SCROLL_SAVE_THRESHOLD) {
+    lastSavedScroll = scrollTop;
     sessionStorage.setItem("scrollPos", String(Math.floor(scrollTop)));
-    console.log(String(Math.floor(scrollTop)));
   }
 });
 function loadPokemons(pokemons2, msg) {
@@ -277,7 +273,7 @@ function loadPokemons(pokemons2, msg) {
 function createFakeCard(amount) {
   cardHolder.innerHTML = "";
   const cards = document.createDocumentFragment();
-  for (let i = 0;i <= amount; i++) {
+  for (let i = 0;i < amount; i++) {
     const card = document.createElement("div");
     card.classList.add("card_fake");
     card.innerHTML = `
@@ -307,5 +303,5 @@ function createErrorCard(error) {
     `;
   cardHolder.appendChild(errorCard);
 }
-createFakeCard(loadSizePokemon);
+createFakeCard(LOAD_SIZE_POKEMONS);
 fetchPokemons();

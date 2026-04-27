@@ -1,33 +1,31 @@
-import { type Pokemon, TIPOS, type Tipo, GENERACIONES, type Generacion, GEN_RANGOS, maxStatLimit, filtrarPokemons, toggleFavorito } from "./funciones";
-
+import { type Pokemon, POKEMON_TYPES, type PokemonType, GENERATIONS, type Generation, GEN_RANGES, MAX_STAT_LIMIT, filterPokemons, toggleFavorite } from "./funciones";
 
 const pokemons: Pokemon[] = [];
-const favoritos: Set<number> = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
-const loadSizePokemon = 1118;
+const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
+const LOAD_SIZE_POKEMONS = 1118;
+const SCROLL_SAVE_THRESHOLD = 10;
 
-let filtroActivo: Tipo = "all";
-let generacionActiva: Generacion = "all";
-let busquedaActiva: string = "";
-let panelVisible: boolean = false;
-let pestañaActiva: "tipos" | "generaciones" = "tipos";
+let activeFilter: PokemonType = "all";
+let activeGeneration: Generation = "all";
+let activeSearch: string = "";
+let isPanelOpen: boolean = false;
+let activeTab: "types" | "generations" = "types";
 
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
-const buscador = document.getElementById("buscador") as HTMLInputElement;
-const form = document.getElementById("form-busqueda") as HTMLFormElement;
-const panelFiltros = document.getElementById("panelFiltros") as HTMLElement;
-const filtroBtn = document.getElementById("filtroBtn") as HTMLElement;
-const scrollPos = document.scrollingElement as HTMLElement;
+const searchInput = document.getElementById("searchInput") as HTMLInputElement;
+const filter_panel = document.getElementById("filter_panel") as HTMLElement;
+const filter_button = document.getElementById("filter_button") as HTMLElement;
 
 
 async function fetchPokemons(): Promise<void> {
     try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${loadSizePokemon}`);
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
         const data = await response.json() as { results: { name: string; url: string }[] };
 
-        const chunkSize = 50;
+        const LOAD_CHUNK_SIZE = 50;
 
-        for (let i = 0; i < data.results.length; i += chunkSize) {
-            const chunk = data.results.slice(i, i + chunkSize);
+        for (let i = 0; i < data.results.length; i += LOAD_CHUNK_SIZE) {
+            const chunk = data.results.slice(i, i + LOAD_CHUNK_SIZE);
 
             const promises = chunk.map(p =>
                 fetch(p.url).then(res => res.json())
@@ -55,92 +53,91 @@ async function fetchPokemons(): Promise<void> {
             pokemons.push(...pokemonsResults);
         }
         loadPokemons(pokemons);
+        restoreScroll();
 
-        const savedScroll = sessionStorage.getItem("scrollPos");
-        if (savedScroll) {
-            window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
-            console.log(savedScroll);
-        }
     } catch (error) {
         createErrorCard(error);
     }
 }
 
+function restoreScroll(): void {
+    const savedScroll = sessionStorage.getItem("scrollPos");
+    if (savedScroll !== null) {
+        window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
+    }
+}
 
-
-//Crear botones de filtros y cambiar estado de activo / inactivo
 function renderPanelFiltros(): void {
-    panelFiltros.innerHTML = `
+    filter_panel.innerHTML = `
         <div id="panel_tabs">
-            <button class="panel_tab ${pestañaActiva === 'tipos' ? 'panel_tab_activo' : ''}" data-tab="tipos">Types</button>
-            <button class="panel_tab ${pestañaActiva === 'generaciones' ? 'panel_tab_activo' : ''}" data-tab="generaciones">Gen</button>
+            <button class="panel_tab ${activeTab === 'types' ? 'panel_tab_activo' : ''}" data-tab="types">Types</button>
+            <button class="panel_tab ${activeTab === 'generations' ? 'panel_tab_activo' : ''}" data-tab="generations">Gen</button>
         </div>
-        <div id="panel_contenido">
-            ${pestañaActiva === 'tipos'
-                ? TIPOS.map(tipo => `
-                    <button class="filtro_tipo ${tipo} ${tipo === filtroActivo ? 'filtro_activo' : ''}" data-tipo="${tipo}">${tipo}</button>
+        <div id="panel_content">
+            ${activeTab === 'types'
+                ? POKEMON_TYPES.map(tipo => `
+                    <button class="filtro_tipo ${tipo} ${tipo === activeFilter ? 'filtro_activo' : ''}" data-tipo="${tipo}">${tipo}</button>
                   `).join("")
-                : GENERACIONES.map(gen => `
-                    <button class="filtro_gen ${gen === generacionActiva ? 'filtro_activo' : ''}" data-gen="${gen}">${gen.toUpperCase()}</button>
+                : GENERATIONS.map(gen => `
+                    <button class="filtro_gen ${gen === activeGeneration ? 'filtro_activo' : ''}" data-gen="${gen}">${gen.toUpperCase()}</button>
                   `).join("")
             }
         </div>
     `;
 }
 
-function abrirPanel(): void {
+function openPanel(): void {
     renderPanelFiltros();
-    panelFiltros.classList.add("visible");
-    panelVisible = true;
+    filter_panel.classList.add("visible");
+    isPanelOpen = true;
 }
 
-function cerrarPanel(): void {
-    panelFiltros.classList.remove("visible");
-    panelVisible = false;
+function closePanel(): void {
+    filter_panel.classList.remove("visible");
+    isPanelOpen = false;
 }
 
 //Boton panel de filtros
-filtroBtn.addEventListener("click", (e: MouseEvent) => {
+filter_button.addEventListener("click", (e: MouseEvent) => {
     e.stopPropagation();
-    panelVisible ? cerrarPanel() : abrirPanel();
+    isPanelOpen ? closePanel() : openPanel();
 });
 
 //click al boton de un filtro 
-panelFiltros.addEventListener("click", (e: MouseEvent) => {
+filter_panel.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
     if (target.classList.contains("panel_tab")) {
-        pestañaActiva = target.dataset["tab"] as "tipos" | "generaciones";
+        activeTab = target.dataset["tab"] as "types" | "generations";
         renderPanelFiltros();
         return;
     }
 
     if (target.classList.contains("filtro_tipo")) {
-        filtroActivo = (target.dataset["tipo"] ?? "all") as Tipo;
-        aplicarFiltros();
-        cerrarPanel();
+        activeFilter = (target.dataset["tipo"] ?? "all") as PokemonType;
+        applyFilters();
+        closePanel();
     }
 
     if (target.classList.contains("filtro_gen")) {
-        generacionActiva = (target.dataset["gen"] ?? "all") as Generacion;
-        aplicarFiltros();
-        cerrarPanel();
+        activeGeneration = (target.dataset["gen"] ?? "all") as Generation;
+        applyFilters();
+        closePanel();
     }
 });
 
-//Buscador
-buscador.addEventListener("input", (event: Event) => { 
+//searchInput
+searchInput.addEventListener("input", (event: Event) => { 
     event.preventDefault();
-    busquedaActiva = buscador.value.toLowerCase();
-    aplicarFiltros();
+    activeSearch = searchInput.value.toLowerCase();
+    applyFilters();
 });
 
-export function aplicarFiltros(): void {
-    const resultado = filtrarPokemons(pokemons, filtroActivo, busquedaActiva, favoritos, generacionActiva);
-    loadPokemons(resultado, busquedaActiva || filtroActivo);
+function applyFilters(): void {
+    const resultado = filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration);
+    loadPokemons(resultado, activeSearch || activeFilter);
 }
 
-//Crear Card
 function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
     const card = document.createElement("a");
 
@@ -155,7 +152,7 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
             </header>
 
             <section class="card_main">
-                <button class="fav_btn ${favoritos.has(pokemon.id) ? 'fav_activo' : ''}" data-id="${pokemon.id}"></button>
+                <button class="fav_btn ${favourites.has(pokemon.id) ? 'fav_activo' : ''}" data-id="${pokemon.id}"></button>
 
                 <img class="img_pokemon"
                      src="${pokemon.image}"
@@ -175,32 +172,32 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
                     <div class="HP">
                         <p class="stat_title">HP</p>
                         <p class="stat_num">${pokemon.stats.hp}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.hp / maxStatLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.hp / MAX_STAT_LIMIT) * 100}%"></div></div>
                     </div>
                     <div class="ATK">
                         <p class="stat_title">ATK</p>
                         <p class="stat_num">${pokemon.stats.attack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.attack / maxStatLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.attack / MAX_STAT_LIMIT) * 100}%"></div></div>
                     </div>
                     <div class="DEF">
                         <p class="stat_title">DEF</p>
                         <p class="stat_num">${pokemon.stats.defense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.defense / maxStatLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.defense / MAX_STAT_LIMIT) * 100}%"></div></div>
                     </div>
                     <div class="SAT">
                         <p class="stat_title">SAT</p>
                         <p class="stat_num">${pokemon.stats.specialAttack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.specialAttack / maxStatLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.specialAttack / MAX_STAT_LIMIT) * 100}%"></div></div>
                     </div>
                     <div class="SDF">
                         <p class="stat_title">SDF</p>
                         <p class="stat_num">${pokemon.stats.specialDefense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.specialDefense / maxStatLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.specialDefense / MAX_STAT_LIMIT) * 100}%"></div></div>
                     </div>
                     <div class="SPD">
                         <p class="stat_title">SPD</p>
                         <p class="stat_num">${pokemon.stats.speed}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.speed / maxStatLimit) * 100}%"></div></div>
+                        <div class="progress"><div class="progress_bar" style="width: ${(pokemon.stats.speed / MAX_STAT_LIMIT) * 100}%"></div></div>
                     </div>
                 </div>
             </section>
@@ -212,33 +209,30 @@ function createPokemonCard(pokemon: Pokemon): HTMLAnchorElement {
     favBtn.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
         const id = parseInt(favBtn.dataset["id"] ?? "0");
-        if (favoritos.has(id)) {
-            favoritos.delete(id);
-            favBtn.classList.remove("fav_activo");
-        } else {
-            favoritos.add(id);
-            favBtn.classList.add("fav_activo");
-        }
-        localStorage.setItem("favoritos", JSON.stringify([...favoritos]));
-        if (filtroActivo === "favoritos") aplicarFiltros();
+
+        const {isFavourite} = toggleFavorite(favourites, id);
+        favBtn.classList.toggle("fav_activo", isFavourite);
+
+        localStorage.setItem("favourites", JSON.stringify([...favourites]));
+        if (activeFilter === "favourites") applyFilters();
     });
 
     return card;
 }
 
-let lastSaved = 0;
+let lastSavedScroll = 0;
 
 window.addEventListener("scroll", () => {
     const scrollTop = window.scrollY;
-    if (scrollTop - lastSaved >= 10 || lastSaved - scrollTop >= 10) {
-        lastSaved = scrollTop;
+    if (scrollTop - lastSavedScroll >= SCROLL_SAVE_THRESHOLD || lastSavedScroll - scrollTop >= SCROLL_SAVE_THRESHOLD) {
+        lastSavedScroll = scrollTop;
         sessionStorage.setItem("scrollPos", String(Math.floor(scrollTop)));
-        console.log(String(Math.floor(scrollTop)));
     }
 });
 
-//Llamada para crear ciertos pokemons
+
 function loadPokemons(pokemons: Pokemon[], msg?: string): void {
     cardHolder.innerHTML = "";
 
@@ -256,12 +250,12 @@ function loadPokemons(pokemons: Pokemon[], msg?: string): void {
     }
 }
 
-//Crear FAKE Card
+
 function createFakeCard(amount: number): void {
     cardHolder.innerHTML = "";
     const cards = document.createDocumentFragment();
 
-    for (let i = 0; i <= amount; i++) {
+    for (let i = 0; i < amount; i++) {
         const card = document.createElement("div");
 
         card.classList.add("card_fake");
@@ -275,7 +269,7 @@ function createFakeCard(amount: number): void {
     cardHolder.appendChild(cards);
 }
 
-//Fallo del buscador
+//Fallo del searchInput
 function createMissingCard(msg?: string): void {
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
@@ -303,5 +297,6 @@ function createErrorCard(error: unknown): void {
 
     cardHolder.appendChild(errorCard);
 }
-createFakeCard(loadSizePokemon);
+
+createFakeCard(LOAD_SIZE_POKEMONS);
 fetchPokemons();

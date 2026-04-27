@@ -15,17 +15,17 @@ export interface Pokemon {
     };
 }
 
-export const TIPOS = ["all","favoritos","normal","fire","water","electric","grass","ice",
+export const POKEMON_TYPES = ["all","favourites","normal","fire","water","electric","grass","ice",
                "fighting","poison","ground","flying","psychic","bug",
-               "rock","ghost","dragon","dark","steel","fairy", "especiales"] as const;
+               "rock","ghost","dragon","dark","steel","fairy", "special"] as const;
 
-export type Tipo = typeof TIPOS[number];
+export type PokemonType = typeof POKEMON_TYPES[number];
 
-export const GENERACIONES = ["all","gen1","gen2","gen3","gen4","gen5","gen6","gen7","gen8","gen9"] as const;
+export const GENERATIONS = ["all","gen1","gen2","gen3","gen4","gen5","gen6","gen7","gen8","gen9"] as const;
 
-export type Generacion = typeof GENERACIONES[number];
+export type Generation = typeof GENERATIONS[number];
 
-export const GEN_RANGOS: Record<Generacion, [number, number] | null> = {
+export const GEN_RANGES: Record<Generation, [number, number] | null> = {
     all:  null,
     gen1: [1,   151],
     gen2: [152, 251],
@@ -38,37 +38,38 @@ export const GEN_RANGOS: Record<Generacion, [number, number] | null> = {
     gen9: [906, 1025],
 };
 
-export const maxStatLimit = 255;
+export const MAX_STAT_LIMIT:number = 255;
+const SPECIAL_POKEMON_THRESHOLD:number = 10000;
 
-export function filtrarPokemons(pokemons: Pokemon[], filtroActivo: Tipo, busquedaActiva: string, favoritos: Set<number>, generacionActiva: Generacion = "all"): Pokemon[] {
-    let resultado = pokemons;
+export function filterPokemons(pokemons: Pokemon[], activeFilter: PokemonType, activeSearch: string, favourites: Set<number>, activeGeneration: Generation = "all"): Pokemon[] {
+    let result = pokemons;
 
-    if (filtroActivo === "favoritos") {
-        resultado = resultado.filter(p => favoritos.has(p.id));
-    } else if (filtroActivo === "especiales") {
-        resultado = resultado.filter(p => (p.id >= 10000));
-    }else if (filtroActivo !== "all") {
-        resultado = resultado.filter(p => p.types.includes(filtroActivo));
+    if (activeFilter === "favourites") {
+        result = result.filter(p => favourites.has(p.id));
+    } else if (activeFilter === "special") {
+        result = result.filter(p => (p.id >= SPECIAL_POKEMON_THRESHOLD));
+    }else if (activeFilter !== "all") {
+        result = result.filter(p => p.types.includes(activeFilter));
     }
 
-    const rango = GEN_RANGOS[generacionActiva];
-    if (rango !== null && filtroActivo !== "especiales") {
-        resultado = resultado.filter(p => p.id >= rango[0] && p.id <= rango[1]);
+    const rango = GEN_RANGES[activeGeneration];
+    if (rango !== null && activeFilter !== "special") {
+        result = result.filter(p => p.id >= rango[0] && p.id <= rango[1]);
     }
 
-    if (busquedaActiva !== "") {
-        resultado = resultado.filter(p => p.name.includes(busquedaActiva));
+    if (activeSearch) {
+        result = result.filter(p => p.name.includes(activeSearch));
     }
 
-    return resultado;
+    return result;
 }
 
-export function toggleFavorito(favoritos: Set<number>, id: number) {
-    if (favoritos.has(id)) {
-        favoritos.delete(id);
-        return { favoritos, esFavorito: false };
+export function toggleFavorite(favourites: Set<number>, id: number) {
+    if (favourites.has(id)) {
+        favourites.delete(id);
+        return { favourites, isFavourite: false };
     } else {
-        favoritos.add(id);
-        return { favoritos, esFavorito: true };
+        favourites.add(id);
+        return { favourites, isFavourite: true };
     }
 }
