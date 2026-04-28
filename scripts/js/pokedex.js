@@ -70,15 +70,16 @@ var pokemons = [];
 var favourites = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 var LOAD_SIZE_POKEMONS = 1118;
 var SCROLL_SAVE_THRESHOLD = 10;
-var activeFilter = "all";
-var activeGeneration = "all";
-var activeSearch = "";
-var isPanelOpen = false;
-var activeTab = "types";
 var cardHolder = document.getElementById("card_holder");
 var searchInput = document.getElementById("searchInput");
 var filter_panel = document.getElementById("filter_panel");
 var filter_button = document.getElementById("filter_button");
+var activeFilter = sessionStorage.getItem("activeFilter") ?? "all";
+var activeGeneration = sessionStorage.getItem("activeGeneration") ?? "all";
+var activeSearch = sessionStorage.getItem("activeSearch") ?? "";
+var isPanelOpen = false;
+var activeTab = "types";
+searchInput.value = activeSearch;
 async function fetchPokemons() {
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
@@ -106,7 +107,7 @@ async function fetchPokemons() {
       }));
       pokemons.push(...pokemonsResults);
     }
-    loadPokemons(pokemons);
+    applyFilters();
     restoreScroll();
   } catch (error) {
     createErrorCard(error);
@@ -170,6 +171,9 @@ searchInput.addEventListener("input", (event) => {
   applyFilters();
 });
 function applyFilters() {
+  sessionStorage.setItem("activeFilter", activeFilter);
+  sessionStorage.setItem("activeGeneration", activeGeneration);
+  sessionStorage.setItem("activeSearch", activeSearch);
   const resultado = filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration);
   loadPokemons(resultado, activeSearch || activeFilter);
 }

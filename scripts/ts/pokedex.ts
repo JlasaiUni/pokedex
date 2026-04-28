@@ -5,16 +5,17 @@ const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favouri
 const LOAD_SIZE_POKEMONS = 1118;
 const SCROLL_SAVE_THRESHOLD = 10;
 
-let activeFilter: PokemonType = "all";
-let activeGeneration: Generation = "all";
-let activeSearch: string = "";
-let isPanelOpen: boolean = false;
-let activeTab: "types" | "generations" = "types";
-
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
 const searchInput = document.getElementById("searchInput") as HTMLInputElement;
 const filter_panel = document.getElementById("filter_panel") as HTMLElement;
 const filter_button = document.getElementById("filter_button") as HTMLElement;
+
+let activeFilter: PokemonType = (sessionStorage.getItem("activeFilter") ?? "all") as PokemonType;
+let activeGeneration: Generation = (sessionStorage.getItem("activeGeneration") ?? "all") as Generation;
+let activeSearch: string = sessionStorage.getItem("activeSearch") ?? "";
+let isPanelOpen: boolean = false;
+let activeTab: "types" | "generations" = "types";
+searchInput.value = activeSearch;
 
 
 async function fetchPokemons(): Promise<void> {
@@ -52,7 +53,7 @@ async function fetchPokemons(): Promise<void> {
 
             pokemons.push(...pokemonsResults);
         }
-        loadPokemons(pokemons);
+        applyFilters();
         restoreScroll();
 
     } catch (error) {
@@ -134,6 +135,10 @@ searchInput.addEventListener("input", (event: Event) => {
 });
 
 function applyFilters(): void {
+    sessionStorage.setItem("activeFilter", activeFilter);
+    sessionStorage.setItem("activeGeneration", activeGeneration);
+    sessionStorage.setItem("activeSearch", activeSearch);
+    
     const resultado = filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration);
     loadPokemons(resultado, activeSearch || activeFilter);
 }
