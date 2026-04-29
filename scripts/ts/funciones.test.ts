@@ -104,15 +104,15 @@ describe("toggleFavorite", () => {
     });
 
     it("añade un pokémon que no era favorito", () => {
-        const { favourites: fav, isFavourite } = toggleFavorite(favourites, 25);
-        expect(fav.has(25)).toBe(true);
+        const isFavourite = toggleFavorite(favourites, 25);
+        expect(favourites.has(25)).toBe(true);
         expect(isFavourite).toBe(true);
     });
 
     it("elimina un pokémon que ya era favorito", () => {
         favourites.add(25);
-        const { favourites: fav, isFavourite } = toggleFavorite(favourites, 25);
-        expect(fav.has(25)).toBe(false);
+        const isFavourite = toggleFavorite(favourites, 25);
+        expect(favourites.has(25)).toBe(false);
         expect(isFavourite).toBe(false);
     });
 

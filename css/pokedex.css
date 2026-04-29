@@ -418,7 +418,7 @@ footer{
     gap:2px;
 }
 
-.filtro_tipo {
+.filter_type {
     padding: 0.3em 0.7em;
     width: 90%;
     border: 1px solid rgba(156, 155, 155, 0.637);
@@ -430,7 +430,7 @@ footer{
     font-weight: 600;
 }
 
-.filtro_tipo:hover {
+.filter_type:hover {
     transform: translateY(-2px);
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
@@ -465,7 +465,7 @@ footer{
     border: 1px solid rgba(156, 155, 155, 0.637);
 }
 
-.filtro_gen {
+.filter_gen {
     padding: 0.3em 0.7em;
     width: 90%;
     border: 1px solid rgba(156, 155, 155, 0.637);
@@ -477,12 +477,12 @@ footer{
     font-weight: 600;
 }
 
-.filtro_gen:hover {
+.filter_gen:hover {
     transform: translateY(-2px);
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
-.filtro_activo {
+.filter_activo {
     color: rgba(80, 80, 80, 0.9);
     border-color: rgba(80, 80, 80, 0.4);
     font-weight: 600;

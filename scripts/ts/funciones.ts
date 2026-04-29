@@ -15,21 +15,29 @@ export interface Pokemon {
     };
 }
 
+export interface PokeAPIResponse {
+    id: number;
+    name: string;
+    weight: number;
+    height: number;
+    sprites: { other: { "official-artwork": { front_default: string } } };
+    types: { type: { name: string } }[];
+    stats: { base_stat: number }[];
+}
+
 export interface PokemonBasic {
     id: number;
     name: string;
     types: string[];
 }
 
+export const SPECIAL_POKEMON_THRESHOLD:number = 10000;
+
 export const POKEMON_TYPES = ["all","favourites","normal","fire","water","electric","grass","ice",
                "fighting","poison","ground","flying","psychic","bug",
                "rock","ghost","dragon","dark","steel","fairy", "special"] as const;
 
-export type PokemonType = typeof POKEMON_TYPES[number];
-
 export const GENERATIONS = ["all","gen1","gen2","gen3","gen4","gen5","gen6","gen7","gen8","gen9"] as const;
-
-export type Generation = typeof GENERATIONS[number];
 
 export const GEN_RANGES: Record<Generation, [number, number] | null> = {
     all:  null,
@@ -44,7 +52,8 @@ export const GEN_RANGES: Record<Generation, [number, number] | null> = {
     gen9: [906, 1025],
 };
 
-const SPECIAL_POKEMON_THRESHOLD:number = 10000;
+export type PokemonType = typeof POKEMON_TYPES[number];
+export type Generation = typeof GENERATIONS[number];
 
 export function filterPokemons(pokemons: PokemonBasic[], activeFilter: PokemonType, activeSearch: string, favourites: Set<number>, activeGeneration: Generation = "all"): PokemonBasic[] {
     let result = pokemons;
@@ -57,9 +66,9 @@ export function filterPokemons(pokemons: PokemonBasic[], activeFilter: PokemonTy
         result = result.filter(p => p.types.includes(activeFilter));
     }
 
-    const rango = GEN_RANGES[activeGeneration];
-    if (rango !== null && activeFilter !== "special") {
-        result = result.filter(p => p.id >= rango[0] && p.id <= rango[1]);
+    const range = GEN_RANGES[activeGeneration];
+    if (range !== null && activeFilter !== "special") {
+        result = result.filter(p => p.id >= range[0] && p.id <= range[1]);
     }
 
     if (activeSearch) {
@@ -69,12 +78,12 @@ export function filterPokemons(pokemons: PokemonBasic[], activeFilter: PokemonTy
     return result;
 }
 
-export function toggleFavorite(favourites: Set<number>, id: number) {
+export function toggleFavorite(favourites: Set<number>, id: number): boolean {
     if (favourites.has(id)) {
         favourites.delete(id);
-        return { favourites, isFavourite: false };
+        return false;
     } else {
         favourites.add(id);
-        return { favourites, isFavourite: true };
+        return true;
     }
 }

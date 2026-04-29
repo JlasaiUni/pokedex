@@ -1,4 +1,5 @@
 // scripts/ts/funciones.ts
+var SPECIAL_POKEMON_THRESHOLD = 1e4;
 var POKEMON_TYPES = [
   "all",
   "favourites",
@@ -35,7 +36,6 @@ var GEN_RANGES = {
   gen8: [810, 905],
   gen9: [906, 1025]
 };
-var SPECIAL_POKEMON_THRESHOLD = 1e4;
 function filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration = "all") {
   let result = pokemons;
   if (activeFilter === "favourites") {
@@ -45,9 +45,9 @@ function filterPokemons(pokemons, activeFilter, activeSearch, favourites, active
   } else if (activeFilter !== "all") {
     result = result.filter((p) => p.types.includes(activeFilter));
   }
-  const rango = GEN_RANGES[activeGeneration];
-  if (rango !== null && activeFilter !== "special") {
-    result = result.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
+  const range = GEN_RANGES[activeGeneration];
+  if (range !== null && activeFilter !== "special") {
+    result = result.filter((p) => p.id >= range[0] && p.id <= range[1]);
   }
   if (activeSearch) {
     result = result.filter((p) => p.name.includes(activeSearch));
@@ -57,15 +57,16 @@ function filterPokemons(pokemons, activeFilter, activeSearch, favourites, active
 function toggleFavorite(favourites, id) {
   if (favourites.has(id)) {
     favourites.delete(id);
-    return { favourites, isFavourite: false };
+    return false;
   } else {
     favourites.add(id);
-    return { favourites, isFavourite: true };
+    return true;
   }
 }
 export {
   toggleFavorite,
   filterPokemons,
+  SPECIAL_POKEMON_THRESHOLD,
   POKEMON_TYPES,
   GEN_RANGES,
   GENERATIONS

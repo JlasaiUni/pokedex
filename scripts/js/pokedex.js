@@ -1,4 +1,5 @@
 // scripts/ts/funciones.ts
+var SPECIAL_POKEMON_THRESHOLD = 1e4;
 var POKEMON_TYPES = [
   "all",
   "favourites",
@@ -35,7 +36,6 @@ var GEN_RANGES = {
   gen8: [810, 905],
   gen9: [906, 1025]
 };
-var SPECIAL_POKEMON_THRESHOLD = 1e4;
 function filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration = "all") {
   let result = pokemons;
   if (activeFilter === "favourites") {
@@ -45,9 +45,9 @@ function filterPokemons(pokemons, activeFilter, activeSearch, favourites, active
   } else if (activeFilter !== "all") {
     result = result.filter((p) => p.types.includes(activeFilter));
   }
-  const rango = GEN_RANGES[activeGeneration];
-  if (rango !== null && activeFilter !== "special") {
-    result = result.filter((p) => p.id >= rango[0] && p.id <= rango[1]);
+  const range = GEN_RANGES[activeGeneration];
+  if (range !== null && activeFilter !== "special") {
+    result = result.filter((p) => p.id >= range[0] && p.id <= range[1]);
   }
   if (activeSearch) {
     result = result.filter((p) => p.name.includes(activeSearch));
@@ -57,10 +57,10 @@ function filterPokemons(pokemons, activeFilter, activeSearch, favourites, active
 function toggleFavorite(favourites, id) {
   if (favourites.has(id)) {
     favourites.delete(id);
-    return { favourites, isFavourite: false };
+    return false;
   } else {
     favourites.add(id);
-    return { favourites, isFavourite: true };
+    return true;
   }
 }
 
@@ -69,16 +69,21 @@ var pokemons = [];
 var favourites = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 var LOAD_SIZE_POKEMONS = 1118;
 var SCROLL_SAVE_THRESHOLD = 10;
+var ID_PAD_LENGTH = 3;
+var WEIGHT_DIVISOR = 10;
+var HEIGHT_DIVISOR = 10;
 var MAX_STAT_LIMIT = 255;
+var INITIAL_FAKE_CARDS = 20;
 var cardHolder = document.getElementById("card_holder");
 var searchInput = document.getElementById("searchInput");
-var filter_panel = document.getElementById("filter_panel");
-var filter_button = document.getElementById("filter_button");
+var filterPanel = document.getElementById("filter_panel");
+var filterButton = document.getElementById("filter_button");
 var activeFilter = sessionStorage.getItem("activeFilter") ?? "all";
 var activeGeneration = sessionStorage.getItem("activeGeneration") ?? "all";
 var activeSearch = sessionStorage.getItem("activeSearch") ?? "";
 var isPanelOpen = false;
 var activeTab = "types";
+var lastSavedScroll = 0;
 searchInput.value = activeSearch;
 async function fetchPokemons() {
   try {
@@ -114,20 +119,20 @@ async function fetchPokemonDetails(id, card) {
       image: p.sprites.other["official-artwork"].front_default,
       types: p.types.map((t) => t.type.name),
       stats: {
-        hp: p.stats[0].base_stat,
-        attack: p.stats[1].base_stat,
-        defense: p.stats[2].base_stat,
-        specialAttack: p.stats[3].base_stat,
-        specialDefense: p.stats[4].base_stat,
-        speed: p.stats[5].base_stat
+        hp: p.stats[0]?.base_stat || 0,
+        attack: p.stats[1]?.base_stat || 0,
+        defense: p.stats[2]?.base_stat || 0,
+        specialAttack: p.stats[3]?.base_stat || 0,
+        specialDefense: p.stats[4]?.base_stat || 0,
+        speed: p.stats[5]?.base_stat || 0
       }
     };
-    hydrateCard(card, details);
+    fillCard(card, details);
   } catch (error) {
     console.error(`Error loading details for pokemon ${id}`, error);
   }
 }
-function hydrateCard(card, pokemon) {
+function fillCard(card, pokemon) {
   const img = card.querySelector(".img_pokemon");
   const weight = card.querySelector(".weight");
   const height = card.querySelector(".height");
@@ -142,8 +147,8 @@ function hydrateCard(card, pokemon) {
     pokemon.stats.speed
   ];
   img.src = pokemon.image;
-  weight.textContent = `${pokemon.weight / 10} kg`;
-  height.textContent = `${pokemon.height / 10} m`;
+  weight.textContent = `${pokemon.weight / WEIGHT_DIVISOR} kg`;
+  height.textContent = `${pokemon.height / HEIGHT_DIVISOR} m`;
   stats.forEach((val, i) => {
     statNums[i].textContent = String(val);
     statBars[i].style.width = `${val / MAX_STAT_LIMIT * 100}%`;
@@ -159,7 +164,6 @@ var detailsObserver = new IntersectionObserver((entries) => {
     }
   });
 }, { rootMargin: "300px" });
-var lastSavedScroll = 0;
 window.addEventListener("scroll", () => {
   const scrollTop = window.scrollY;
   if (scrollTop - lastSavedScroll >= SCROLL_SAVE_THRESHOLD || lastSavedScroll - scrollTop >= SCROLL_SAVE_THRESHOLD) {
@@ -174,46 +178,46 @@ function restoreScroll() {
   }
 }
 function renderPanelFiltros() {
-  filter_panel.innerHTML = `
+  filterPanel.innerHTML = `
         <div id="panel_tabs">
             <button class="panel_tab ${activeTab === "types" ? "panel_tab_activo" : ""}" data-tab="types">Types</button>
             <button class="panel_tab ${activeTab === "generations" ? "panel_tab_activo" : ""}" data-tab="generations">Gen</button>
         </div>
         <div id="panel_content">
-            ${activeTab === "types" ? POKEMON_TYPES.map((tipo) => `
-                    <button class="filtro_tipo ${tipo} ${tipo === activeFilter ? "filtro_activo" : ""}" data-tipo="${tipo}">${tipo}</button>
+            ${activeTab === "types" ? POKEMON_TYPES.map((type) => `
+                    <button class="filter_type ${type} ${type === activeFilter ? "filter_activo" : ""}" data-type="${type}">${type}</button>
                   `).join("") : GENERATIONS.map((gen) => `
-                    <button class="filtro_gen ${gen === activeGeneration ? "filtro_activo" : ""}" data-gen="${gen}">${gen.toUpperCase()}</button>
+                    <button class="filter_gen ${gen === activeGeneration ? "filter_activo" : ""}" data-gen="${gen}">${gen.toUpperCase()}</button>
                   `).join("")}
         </div>
     `;
 }
 function openPanel() {
   renderPanelFiltros();
-  filter_panel.classList.add("visible");
+  filterPanel.classList.add("visible");
   isPanelOpen = true;
 }
 function closePanel() {
-  filter_panel.classList.remove("visible");
+  filterPanel.classList.remove("visible");
   isPanelOpen = false;
 }
-filter_button.addEventListener("click", (e) => {
+filterButton.addEventListener("click", (e) => {
   e.stopPropagation();
   isPanelOpen ? closePanel() : openPanel();
 });
-filter_panel.addEventListener("click", (e) => {
+filterPanel.addEventListener("click", (e) => {
   const target = e.target;
   if (target.classList.contains("panel_tab")) {
     activeTab = target.dataset["tab"];
     renderPanelFiltros();
     return;
   }
-  if (target.classList.contains("filtro_tipo")) {
-    activeFilter = target.dataset["tipo"] ?? "all";
+  if (target.classList.contains("filter_type")) {
+    activeFilter = target.dataset["type"] ?? "all";
     applyFilters();
     closePanel();
   }
-  if (target.classList.contains("filtro_gen")) {
+  if (target.classList.contains("filter_gen")) {
     activeGeneration = target.dataset["gen"] ?? "all";
     applyFilters();
     closePanel();
@@ -252,7 +256,7 @@ function createPokemonCard(pokemon) {
         <article class="card" data-id="${pokemon.id}">
             <header class="card_header">
                 <p class="card_name"><strong>${pokemon.name}</strong></p>
-                <p class="card_number"><strong>#${String(pokemon.id).padStart(3, "0")}</strong></p>
+                <p class="card_number"><strong>#${String(pokemon.id).padStart(ID_PAD_LENGTH, "0")}</strong></p>
             </header>
 
             <section class="card_main">
@@ -289,7 +293,7 @@ function createPokemonCard(pokemon) {
     e.preventDefault();
     e.stopPropagation();
     const id = parseInt(favBtn.dataset["id"] ?? "0");
-    const { isFavourite } = toggleFavorite(favourites, id);
+    const isFavourite = toggleFavorite(favourites, id);
     favBtn.classList.toggle("fav_activo", isFavourite);
     localStorage.setItem("favourites", JSON.stringify([...favourites]));
     if (activeFilter === "favourites")
@@ -330,5 +334,5 @@ function createErrorCard(error) {
     `;
   cardHolder.appendChild(errorCard);
 }
-createFakeCard(LOAD_SIZE_POKEMONS);
+createFakeCard(INITIAL_FAKE_CARDS);
 fetchPokemons();

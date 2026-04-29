@@ -1,15 +1,19 @@
-import { type Pokemon, type PokemonBasic, POKEMON_TYPES, type PokemonType, GENERATIONS, type Generation, GEN_RANGES, filterPokemons, toggleFavorite } from "./funciones";
+import { type Pokemon, type PokemonBasic, POKEMON_TYPES, type PokemonType, GENERATIONS, type Generation, GEN_RANGES, filterPokemons, toggleFavorite, type PokeAPIResponse} from "./funciones";
 
 const pokemons: PokemonBasic[] = [];
 const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 const LOAD_SIZE_POKEMONS = 1118;
 const SCROLL_SAVE_THRESHOLD = 10;
+const ID_PAD_LENGTH = 3;
+const WEIGHT_DIVISOR = 10;  // hectogramos -> kg
+const HEIGHT_DIVISOR = 10;  // decimetros -> m
 const MAX_STAT_LIMIT:number = 255;
+const INITIAL_FAKE_CARDS = 20;
 
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
 const searchInput = document.getElementById("searchInput") as HTMLInputElement;
-const filter_panel = document.getElementById("filter_panel") as HTMLElement;
-const filter_button = document.getElementById("filter_button") as HTMLElement;
+const filterPanel = document.getElementById("filter_panel") as HTMLElement;
+const filterButton = document.getElementById("filter_button") as HTMLElement;
 
 let activeFilter: PokemonType = (sessionStorage.getItem("activeFilter") ?? "all") as PokemonType;
 let activeGeneration: Generation = (sessionStorage.getItem("activeGeneration") ?? "all") as Generation;
@@ -31,12 +35,12 @@ async function fetchPokemons(): Promise<void> {
             const chunk = data.results.slice(i, i + LOAD_CHUNK_SIZE);
 
             const promises = chunk.map(p => fetch(p.url).then(res => res.json()));
-            const results: any[] = await Promise.all(promises);
+            const results: PokeAPIResponse[] = await Promise.all(promises);
 
             const basicPokemons: PokemonBasic[] = results.map(p => ({
                 id: p.id,
                 name: p.name,
-                types: p.types.map((t: any) => t.type.name),
+                types: p.types.map((t: PokeAPIResponse["types"][number]) => t.type.name),
             }));
 
             pokemons.push(...basicPokemons);
@@ -53,7 +57,7 @@ async function fetchPokemons(): Promise<void> {
 async function fetchPokemonDetails(id: number, card: HTMLElement): Promise<void> {
     try {
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-        const p = await response.json();
+        const p = await response.json() as PokeAPIResponse;
 
         const details: Pokemon = {
             id: p.id,
@@ -61,14 +65,14 @@ async function fetchPokemonDetails(id: number, card: HTMLElement): Promise<void>
             weight: p.weight,
             height: p.height,
             image: p.sprites.other["official-artwork"].front_default,
-            types: p.types.map((t: any) => t.type.name),
+            types: p.types.map((t: PokeAPIResponse["types"][number]) => t.type.name),
             stats: {
-                hp:             p.stats[0].base_stat,
-                attack:         p.stats[1].base_stat,
-                defense:        p.stats[2].base_stat,
-                specialAttack:  p.stats[3].base_stat,
-                specialDefense: p.stats[4].base_stat,
-                speed:          p.stats[5].base_stat,
+                hp:             p.stats[0]?.base_stat || 0,
+                attack:         p.stats[1]?.base_stat || 0,
+                defense:        p.stats[2]?.base_stat || 0,
+                specialAttack:  p.stats[3]?.base_stat || 0,
+                specialDefense: p.stats[4]?.base_stat || 0,
+                speed:          p.stats[5]?.base_stat || 0,
             }
         };
 
@@ -97,8 +101,8 @@ function fillCard(card: HTMLElement, pokemon: Pokemon): void {
     ];
 
     img.src = pokemon.image;
-    weight.textContent = `${pokemon.weight / 10} kg`;
-    height.textContent = `${pokemon.height / 10} m`;
+    weight.textContent = `${pokemon.weight / WEIGHT_DIVISOR} kg`;
+    height.textContent = `${pokemon.height / HEIGHT_DIVISOR} m`;
 
     stats.forEach((val, i) => {
         (statNums[i] as HTMLElement).textContent = String(val);
@@ -133,18 +137,18 @@ function restoreScroll(): void {
 }
 
 function renderPanelFiltros(): void {
-    filter_panel.innerHTML = `
+    filterPanel.innerHTML = `
         <div id="panel_tabs">
             <button class="panel_tab ${activeTab === 'types' ? 'panel_tab_activo' : ''}" data-tab="types">Types</button>
             <button class="panel_tab ${activeTab === 'generations' ? 'panel_tab_activo' : ''}" data-tab="generations">Gen</button>
         </div>
         <div id="panel_content">
             ${activeTab === 'types'
-                ? POKEMON_TYPES.map(tipo => `
-                    <button class="filtro_tipo ${tipo} ${tipo === activeFilter ? 'filtro_activo' : ''}" data-tipo="${tipo}">${tipo}</button>
+                ? POKEMON_TYPES.map(type => `
+                    <button class="filter_type ${type} ${type === activeFilter ? 'filter_activo' : ''}" data-type="${type}">${type}</button>
                   `).join("")
                 : GENERATIONS.map(gen => `
-                    <button class="filtro_gen ${gen === activeGeneration ? 'filtro_activo' : ''}" data-gen="${gen}">${gen.toUpperCase()}</button>
+                    <button class="filter_gen ${gen === activeGeneration ? 'filter_activo' : ''}" data-gen="${gen}">${gen.toUpperCase()}</button>
                   `).join("")
             }
         </div>
@@ -153,23 +157,23 @@ function renderPanelFiltros(): void {
 
 function openPanel(): void {
     renderPanelFiltros();
-    filter_panel.classList.add("visible");
+    filterPanel.classList.add("visible");
     isPanelOpen = true;
 }
 
 function closePanel(): void {
-    filter_panel.classList.remove("visible");
+    filterPanel.classList.remove("visible");
     isPanelOpen = false;
 }
 
-//Boton panel de filtros
-filter_button.addEventListener("click", (e: MouseEvent) => {
+//Boton panel de filters
+filterButton.addEventListener("click", (e: MouseEvent) => {
     e.stopPropagation();
     isPanelOpen ? closePanel() : openPanel();
 });
 
-//click al boton de un filtro 
-filter_panel.addEventListener("click", (e: MouseEvent) => {
+//click al boton de un filter 
+filterPanel.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
     if (target.classList.contains("panel_tab")) {
@@ -178,13 +182,13 @@ filter_panel.addEventListener("click", (e: MouseEvent) => {
         return;
     }
 
-    if (target.classList.contains("filtro_tipo")) {
-        activeFilter = (target.dataset["tipo"] ?? "all") as PokemonType;
+    if (target.classList.contains("filter_type")) {
+        activeFilter = (target.dataset["type"] ?? "all") as PokemonType;
         applyFilters();
         closePanel();
     }
 
-    if (target.classList.contains("filtro_gen")) {
+    if (target.classList.contains("filter_gen")) {
         activeGeneration = (target.dataset["gen"] ?? "all") as Generation;
         applyFilters();
         closePanel();
@@ -230,7 +234,7 @@ function createPokemonCard(pokemon: PokemonBasic): HTMLAnchorElement {
         <article class="card" data-id="${pokemon.id}">
             <header class="card_header">
                 <p class="card_name"><strong>${pokemon.name}</strong></p>
-                <p class="card_number"><strong>#${String(pokemon.id).padStart(3, '0')}</strong></p>
+                <p class="card_number"><strong>#${String(pokemon.id).padStart(ID_PAD_LENGTH, '0')}</strong></p>
             </header>
 
             <section class="card_main">
@@ -270,7 +274,7 @@ function createPokemonCard(pokemon: PokemonBasic): HTMLAnchorElement {
         e.preventDefault();
         e.stopPropagation();
         const id = parseInt(favBtn.dataset["id"] ?? "0");
-        const { isFavourite } = toggleFavorite(favourites, id);
+        const isFavourite  = toggleFavorite(favourites, id);
         favBtn.classList.toggle("fav_activo", isFavourite);
         localStorage.setItem("favourites", JSON.stringify([...favourites]));
         if (activeFilter === "favourites") applyFilters();
@@ -297,7 +301,6 @@ function createFakeCard(amount: number): void {
     cardHolder.appendChild(cards);
 }
 
-//Fallo del searchInput
 function createMissingCard(msg?: string): void {
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
@@ -310,7 +313,6 @@ function createMissingCard(msg?: string): void {
     cardHolder.appendChild(errorCard);
 }
 
-//Error de la API
 function createErrorCard(error: unknown): void {
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
@@ -326,5 +328,5 @@ function createErrorCard(error: unknown): void {
     cardHolder.appendChild(errorCard);
 }
 
-createFakeCard(LOAD_SIZE_POKEMONS);
+createFakeCard(INITIAL_FAKE_CARDS);
 fetchPokemons();
