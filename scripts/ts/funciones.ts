@@ -15,6 +15,12 @@ export interface Pokemon {
     };
 }
 
+export interface PokemonBasic {
+    id: number;
+    name: string;
+    types: string[];
+}
+
 export const POKEMON_TYPES = ["all","favourites","normal","fire","water","electric","grass","ice",
                "fighting","poison","ground","flying","psychic","bug",
                "rock","ghost","dragon","dark","steel","fairy", "special"] as const;
@@ -38,10 +44,9 @@ export const GEN_RANGES: Record<Generation, [number, number] | null> = {
     gen9: [906, 1025],
 };
 
-export const MAX_STAT_LIMIT:number = 255;
 const SPECIAL_POKEMON_THRESHOLD:number = 10000;
 
-export function filterPokemons(pokemons: Pokemon[], activeFilter: PokemonType, activeSearch: string, favourites: Set<number>, activeGeneration: Generation = "all"): Pokemon[] {
+export function filterPokemons(pokemons: PokemonBasic[], activeFilter: PokemonType, activeSearch: string, favourites: Set<number>, activeGeneration: Generation = "all"): PokemonBasic[] {
     let result = pokemons;
 
     if (activeFilter === "favourites") {

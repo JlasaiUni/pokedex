@@ -35,7 +35,6 @@ var GEN_RANGES = {
   gen8: [810, 905],
   gen9: [906, 1025]
 };
-var MAX_STAT_LIMIT = 255;
 var SPECIAL_POKEMON_THRESHOLD = 1e4;
 function filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration = "all") {
   let result = pokemons;
@@ -68,7 +67,6 @@ export {
   toggleFavorite,
   filterPokemons,
   POKEMON_TYPES,
-  MAX_STAT_LIMIT,
   GEN_RANGES,
   GENERATIONS
 };
