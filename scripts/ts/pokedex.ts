@@ -24,29 +24,50 @@ let lastSavedScroll = 0;
 searchInput.value = activeSearch;
 
 
-async function fetchPokemons(): Promise<void> {
+async function fetchPokemonList(): Promise<{ name: string; url: string }[]> {
+    const response = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json() as { results: { name: string; url: string }[] };
+    return data.results;
+}
+
+function toPokemonBasic(p: PokeAPIResponse): PokemonBasic {
+    return {
+        id:    p.id,
+        name:  p.name,
+        types: p.types.map(t => t.type.name),
+    };
+}
+
+async function fetchChunk(
+    entries: { name: string; url: string }[]
+): Promise<PokemonBasic[]> {
+    const responses: PokeAPIResponse[] = await Promise.all(
+        entries.map(e => fetch(e.url).then(r => r.json()))
+    );
+    return responses.map(toPokemonBasic);
+}
+
+async function fetchAllPokemons(
+    onChunkLoaded: (chunk: PokemonBasic[]) => void
+): Promise<void> {
+    const CHUNK_SIZE = 50;
+    const list = await fetchPokemonList();
+
+    for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+        const chunk = await fetchChunk(list.slice(i, i + CHUNK_SIZE));
+        onChunkLoaded(chunk);
+    }
+}
+
+async function initPokemons(): Promise<void> {
     try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
-        const data = await response.json() as { results: { name: string; url: string }[] };
-
-        const LOAD_CHUNK_SIZE = 50;
-
-        for (let i = 0; i < data.results.length; i += LOAD_CHUNK_SIZE) {
-            const chunk = data.results.slice(i, i + LOAD_CHUNK_SIZE);
-
-            const promises = chunk.map(p => fetch(p.url).then(res => res.json()));
-            const results: PokeAPIResponse[] = await Promise.all(promises);
-
-            const basicPokemons: PokemonBasic[] = results.map(p => ({
-                id: p.id,
-                name: p.name,
-                types: p.types.map((t: PokeAPIResponse["types"][number]) => t.type.name),
-            }));
-
-            pokemons.push(...basicPokemons);
-        }
-
-        applyFilters();
+        await fetchAllPokemons((chunk) => {
+            pokemons.push(...chunk); 
+            applyFilters();           
+        });
         restoreScroll();
 
     } catch (error) {
@@ -329,4 +350,4 @@ function createErrorCard(error: unknown): void {
 }
 
 createFakeCard(INITIAL_FAKE_CARDS);
-fetchPokemons();
+initPokemons();
