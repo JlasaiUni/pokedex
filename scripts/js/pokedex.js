@@ -263,11 +263,8 @@ function loadPokemons(pokemons2, msg) {
     createMissingCard(msg);
   }
 }
-function createPokemonCard(pokemon) {
-  const card = document.createElement("a");
-  card.classList.add("card_link");
-  card.href = "cardDetallado.html?id=" + pokemon.id;
-  card.innerHTML = `
+function buildCardHTML(pokemon, isFavourite) {
+  return `
         <article class="card" data-id="${pokemon.id}">
             <header class="card_header">
                 <p class="card_name"><strong>${pokemon.name}</strong></p>
@@ -275,7 +272,7 @@ function createPokemonCard(pokemon) {
             </header>
 
             <section class="card_main">
-                <button class="fav_btn ${favourites.has(pokemon.id) ? "fav_activo" : ""}" data-id="${pokemon.id}"></button>
+                <button class="fav_btn ${isFavourite ? "fav_activo" : ""}" data-id="${pokemon.id}"></button>
 
                 <img class="img_pokemon" src="" alt="foto de ${pokemon.name}">
 
@@ -301,19 +298,30 @@ function createPokemonCard(pokemon) {
             </section>
         </article>
     `;
-  const article = card.querySelector("article");
-  detailsObserver.observe(article);
+}
+function setupFavButton(card, pokemon) {
   const favBtn = card.querySelector(".fav_btn");
   favBtn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const id = parseInt(favBtn.dataset["id"] ?? "0");
-    const isFavourite = toggleFavorite(favourites, id);
+    const isFavourite = toggleFavorite(favourites, pokemon.id);
     favBtn.classList.toggle("fav_activo", isFavourite);
     localStorage.setItem("favourites", JSON.stringify([...favourites]));
     if (activeFilter === "favourites")
       applyFilters();
   });
+}
+function setupLazyLoad(card) {
+  const article = card.querySelector("article");
+  detailsObserver.observe(article);
+}
+function createPokemonCard(pokemon) {
+  const card = document.createElement("a");
+  card.classList.add("card_link");
+  card.href = `cardDetallado.html?id=${pokemon.id}`;
+  card.innerHTML = buildCardHTML(pokemon, favourites.has(pokemon.id));
+  setupFavButton(card, pokemon);
+  setupLazyLoad(card);
   return card;
 }
 function createFakeCard(amount) {
