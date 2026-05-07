@@ -1,40 +1,65 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { filterPokemons, toggleFavorite, POKEMON_TYPES } from "./funciones";
+import { filterPokemons, toggleFavorite, POKEMON_TYPES, type PokemonBasic } from "./funciones";
+import { GEN_RANGES } from "./funciones";
 
 // ─── Datos de prueba ───────────────────────────────────────────────────────────
 
-const PIKACHU = {
+const PIKACHU: PokemonBasic = {
     id: 25,
     name: "pikachu",
     types: ["electric"],
-    weight: 60, height: 4, image: "",
-    stats: { hp: 35, attack: 55, defense: 40, specialAttack: 50, specialDefense: 50, speed: 90 },
 };
 
-const CHARMANDER = {
+const CHARMANDER: PokemonBasic = {
     id: 4,
     name: "charmander",
     types: ["fire"],
-    weight: 85, height: 6, image: "",
-    stats: { hp: 39, attack: 52, defense: 43, specialAttack: 60, specialDefense: 50, speed: 65 },
 };
 
-const BULBASAUR = {
+const BULBASAUR: PokemonBasic = {
     id: 1,
     name: "bulbasaur",
     types: ["grass", "poison"],
-    weight: 69, height: 7, image: "",
-    stats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 },
 };
 
-const TODOS = [PIKACHU, CHARMANDER, BULBASAUR];
+const MEW: PokemonBasic = {
+    id: 151,
+    name: "mew",
+    types: ["psychic"],
+};
+
+const TREECKO: PokemonBasic = {
+    id: 252,
+    name: "treecko",
+    types: ["grass"],
+};
+
+const LUCARIO: PokemonBasic = {
+    id: 448,
+    name: "lucario",
+    types: ["fighting", "steel"],
+};
+
+const SPRIGATITO: PokemonBasic = {
+    id: 906,
+    name: "sprigatito",
+    types: ["grass"],
+};
+
+const MEGA_RAYQUAZA: PokemonBasic = {
+    id: 10001,
+    name: "mega-rayquaza",
+    types: ["dragon", "flying"],
+};
+
+const TODOS = [PIKACHU, CHARMANDER, BULBASAUR, TREECKO, LUCARIO, SPRIGATITO, MEGA_RAYQUAZA, MEW];
 
 // ─── filterPokemons ──────────────────────────────────────────────────────────
 
 describe("filterPokemons", () => {
     it('devuelve todos los pokémons con filtro "all" y sin búsqueda', () => {
         const resultado = filterPokemons(TODOS, "all", "", new Set());
-        expect(resultado).toHaveLength(3);
+        expect(resultado).toHaveLength(8);
     });
 
     it("filtra correctamente por tipo", () => {
@@ -82,15 +107,130 @@ describe("filterPokemons", () => {
         expect(resultado[0]!.name).toBe("pikachu");
     });
 
+    it("filtra correctamente por generación 1", () => {
+        const resultado = filterPokemons(
+            TODOS,
+            "all",
+            "",
+            new Set(),
+            "gen1"
+        );
+
+        expect(resultado.map(p => p.name)).toEqual([
+            "pikachu",
+            "charmander",
+            "bulbasaur",
+            "mew"
+        ]);
+    });
+
+    it("filtra correctamente por generación 3", () => {
+        const resultado = filterPokemons(
+            TODOS,
+            "all",
+            "",
+            new Set(),
+            "gen3"
+        );
+
+        expect(resultado).toHaveLength(1);
+        expect(resultado[0]!.name).toBe("treecko");
+    });
+
+    it("combina generación y tipo", () => {
+        const resultado = filterPokemons(
+            TODOS,
+            "grass",
+            "",
+            new Set(),
+            "gen9"
+        );
+
+        expect(resultado).toHaveLength(1);
+        expect(resultado[0]!.name).toBe("sprigatito");
+    });
+
+    it('filtra pokémons especiales con filtro "special"', () => {
+        const resultado = filterPokemons(
+            TODOS,
+            "special",
+            "",
+            new Set()
+        );
+
+        expect(resultado).toHaveLength(1);
+        expect(resultado[0]!.name).toBe("mega-rayquaza");
+    });
+
+    it('filtra pokémons especiales con filtro "special"', () => {
+        const resultado = filterPokemons(
+            TODOS,
+            "special",
+            "",
+            new Set()
+        );
+
+        expect(resultado).toHaveLength(1);
+        expect(resultado[0]!.name).toBe("mega-rayquaza");
+    });
+
+    it("special ignora filtros de generación", () => {
+        const resultado = filterPokemons(
+            TODOS,
+            "special",
+            "",
+            new Set(),
+            "gen1"
+        );
+
+        expect(resultado).toHaveLength(1);
+    });
+
+    it("combina favourites + búsqueda", () => {
+
+        const favourites = new Set([25]);
+
+        const resultado = filterPokemons(
+            TODOS,
+            "favourites",
+            "pika",
+            favourites
+        );
+
+        expect(resultado).toHaveLength(1);
+    });
+
+    it("favourites + búsqueda sin coincidencias devuelve vacío", () => {
+
+        const favourites = new Set([25]);
+
+        const resultado = filterPokemons(
+            TODOS,
+            "favourites",
+            "char",
+            favourites
+        );
+
+        expect(resultado).toHaveLength(0);
+    });
+
     it('devuelve array vacío si no hay favourites con filtro "favourites"', () => {
         const resultado = filterPokemons(TODOS, "favourites", "", new Set());
         expect(resultado).toHaveLength(0);
     });
 
-    it("no muta el array original", () => {
-        const copia = [...TODOS];
-        filterPokemons(TODOS, "fire", "", new Set());
-        expect(TODOS).toEqual(copia);
+    it("no muta los pokémons originales", () => {
+
+        const original = structuredClone(TODOS);
+
+        filterPokemons(
+            TODOS,
+            "fire",
+            "",
+            new Set()
+        );
+
+        expect(TODOS).toEqual(original);
     });
 });
 
@@ -129,6 +269,22 @@ describe("toggleFavorite", () => {
         toggleFavorite(favourites, 25);
         expect(favourites.size).toBe(3);
     });
+
+    it("toggle dos veces devuelve al estado original", () => {
+
+        toggleFavorite(favourites, 25);
+        toggleFavorite(favourites, 25);
+
+        expect(favourites.has(25)).toBe(false);
+    });
+
+    it("permite ids distintos sin conflicto", () => {
+
+        toggleFavorite(favourites, 25);
+        toggleFavorite(favourites, 2500);
+
+        expect(favourites.size).toBe(2);
+    });
 });
 
 // ─── TIPOS ────────────────────────────────────────────────────────────────────
@@ -142,4 +298,46 @@ describe("TIPOS", () => {
     it("contiene los 18 tipos estándar de Pokémon más all, favourites y especiales", () => {
         expect(POKEMON_TYPES).toHaveLength(21);
     });
+});
+
+describe("GEN_RANGES", () => {
+
+    it("gen1 tiene rango correcto", () => {
+        expect(GEN_RANGES.gen1).toEqual([1, 151]);
+    });
+
+    it("gen9 tiene rango correcto", () => {
+        expect(GEN_RANGES.gen9).toEqual([906, 1025]);
+    });
+
+    it('"all" no tiene rango', () => {
+        expect(GEN_RANGES.all).toBeNull();
+    });
+
+    it("incluye pokémons en el límite exacto de generación", () => {
+
+        const resultado = filterPokemons(
+            TODOS,
+            "all",
+            "",
+            new Set(),
+            "gen1"
+        );
+
+        expect(resultado.some(p => p.id === 1)).toBe(true);
+    });
+
+    it("incluye pokémons en el límite exacto de generación", () => {
+
+        const resultado = filterPokemons(
+            TODOS,
+            "all",
+            "",
+            new Set(),
+            "gen1"
+        );
+
+        expect(resultado.some(p => p.id === 151)).toBe(true);
+    });
+
 });
