@@ -3,6 +3,7 @@ import { type Pokemon, type PokemonBasic, POKEMON_TYPES, type PokemonType, GENER
 const pokemons: PokemonBasic[] = [];
 const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 const pokemonDetailsCache: Map<number, Pokemon> = new Map();
+const pokemonCards = new Map<number, HTMLAnchorElement>();
 const LOAD_SIZE_POKEMONS = 1118;
 const SCROLL_SAVE_THRESHOLD = 10;
 const ID_PAD_LENGTH = 3;
@@ -57,10 +58,25 @@ async function fetchAllPokemons(onChunkLoaded: (chunk: PokemonBasic[]) => void):
     }
 }
 
+function renderInitialPokemons(pokemons: PokemonBasic[]): void {
+
+    cardHolder.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+
+    pokemons.forEach(pokemon => {
+        const card = createPokemonCard(pokemon);
+        pokemonCards.set(pokemon.id, card);
+        fragment.appendChild(card);
+    });
+
+    cardHolder.appendChild(fragment);
+}
+
 async function initPokemons(): Promise<void> {
     try {
         await fetchAllPokemons((chunk) => {
             pokemons.push(...chunk); 
+            renderInitialPokemons(pokemons);
             applyFilters();           
         });
         restoreScroll();
@@ -226,11 +242,42 @@ searchInput.addEventListener("input", (event: Event) => {
 });
 
 function applyFilters(): void {
+
     sessionStorage.setItem("activeFilter", activeFilter);
     sessionStorage.setItem("activeGeneration", activeGeneration);
     sessionStorage.setItem("activeSearch", activeSearch);
-    const result = filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration);
-    loadPokemons(result, activeSearch || activeFilter);
+
+    const filtered = new Set(
+        filterPokemons(
+            pokemons,
+            activeFilter,
+            activeSearch,
+            favourites,
+            activeGeneration
+        ).map(p => p.id)
+    );
+
+    pokemonCards.forEach((card, id) => {
+
+        card.style.display = filtered.has(id)
+            ? ""
+            : "none";
+    });
+
+    if (filtered.size === 0) {
+        createMissingCard(activeSearch || activeFilter);
+    } else {
+        removeMissingCard();
+    }
+}
+
+function removeMissingCard(): void {
+
+    const missing = cardHolder.querySelector(".card_missing");
+
+    if (missing) {
+        missing.remove();
+    }
 }
 
 function loadPokemons(pokemons: PokemonBasic[], msg?: string): void {
@@ -336,6 +383,7 @@ function createFakeCard(amount: number): void {
 }
 
 function createMissingCard(msg?: string): void {
+    removeMissingCard();
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
 
@@ -348,6 +396,7 @@ function createMissingCard(msg?: string): void {
 }
 
 function createErrorCard(error: unknown): void {
+    removeMissingCard();
     const errorCard = document.createElement("div");
     errorCard.classList.add("card_missing");
 

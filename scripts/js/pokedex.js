@@ -68,6 +68,7 @@ function toggleFavorite(favourites, id) {
 var pokemons = [];
 var favourites = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 var pokemonDetailsCache = new Map;
+var pokemonCards = new Map;
 var LOAD_SIZE_POKEMONS = 1118;
 var SCROLL_SAVE_THRESHOLD = 10;
 var ID_PAD_LENGTH = 3;
@@ -112,10 +113,21 @@ async function fetchAllPokemons(onChunkLoaded) {
     onChunkLoaded(chunk);
   }
 }
+function renderInitialPokemons(pokemons2) {
+  cardHolder.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  pokemons2.forEach((pokemon) => {
+    const card = createPokemonCard(pokemon);
+    pokemonCards.set(pokemon.id, card);
+    fragment.appendChild(card);
+  });
+  cardHolder.appendChild(fragment);
+}
 async function initPokemons() {
   try {
     await fetchAllPokemons((chunk) => {
       pokemons.push(...chunk);
+      renderInitialPokemons(pokemons);
       applyFilters();
     });
     restoreScroll();
@@ -254,20 +266,20 @@ function applyFilters() {
   sessionStorage.setItem("activeFilter", activeFilter);
   sessionStorage.setItem("activeGeneration", activeGeneration);
   sessionStorage.setItem("activeSearch", activeSearch);
-  const result = filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration);
-  loadPokemons(result, activeSearch || activeFilter);
-}
-function loadPokemons(pokemons2, msg) {
-  cardHolder.innerHTML = "";
-  if (pokemons2.length > 0) {
-    const cards = document.createDocumentFragment();
-    pokemons2.forEach((pokemon) => {
-      const card = createPokemonCard(pokemon);
-      cards.appendChild(card);
-    });
-    cardHolder.appendChild(cards);
+  const filtered = new Set(filterPokemons(pokemons, activeFilter, activeSearch, favourites, activeGeneration).map((p) => p.id));
+  pokemonCards.forEach((card, id) => {
+    card.style.display = filtered.has(id) ? "" : "none";
+  });
+  if (filtered.size === 0) {
+    createMissingCard(activeSearch || activeFilter);
   } else {
-    createMissingCard(msg);
+    removeMissingCard();
+  }
+}
+function removeMissingCard() {
+  const missing = cardHolder.querySelector(".card_missing");
+  if (missing) {
+    missing.remove();
   }
 }
 function buildCardHTML(pokemon, isFavourite) {
@@ -345,6 +357,7 @@ function createFakeCard(amount) {
   cardHolder.appendChild(cards);
 }
 function createMissingCard(msg) {
+  removeMissingCard();
   const errorCard = document.createElement("div");
   errorCard.classList.add("card_missing");
   errorCard.innerHTML = `
@@ -354,6 +367,7 @@ function createMissingCard(msg) {
   cardHolder.appendChild(errorCard);
 }
 function createErrorCard(error) {
+  removeMissingCard();
   const errorCard = document.createElement("div");
   errorCard.classList.add("card_missing");
   cardHolder.innerHTML = "";
