@@ -10,7 +10,7 @@ const ID_PAD_LENGTH = 3;
 const WEIGHT_DIVISOR = 10;  // hectogramos -> kg
 const HEIGHT_DIVISOR = 10;  // decimetros -> m
 const MAX_STAT_LIMIT:number = 255;
-const INITIAL_FAKE_CARDS = 20;
+const INITIAL_FAKE_CARDS = 0; // esto esta a 0 porque no hace falta y no funciona bien con appendPokemonCards
 
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
 const searchInput = document.getElementById("searchInput") as HTMLInputElement;
@@ -23,6 +23,7 @@ let activeSearch: string = sessionStorage.getItem("activeSearch") ?? "";
 let isPanelOpen: boolean = false;
 let activeTab: "types" | "generations" = "types";
 let lastSavedScroll = 0;
+let isInitialLoading = true;
 searchInput.value = activeSearch;
 
 
@@ -58,14 +59,22 @@ async function fetchAllPokemons(onChunkLoaded: (chunk: PokemonBasic[]) => void):
     }
 }
 
-function renderInitialPokemons(pokemons: PokemonBasic[]): void {
-
-    cardHolder.innerHTML = "";
+function appendPokemonCards(newPokemons: PokemonBasic[]): void {
     const fragment = document.createDocumentFragment();
 
-    pokemons.forEach(pokemon => {
+    newPokemons.forEach(pokemon => {
         const card = createPokemonCard(pokemon);
         pokemonCards.set(pokemon.id, card);
+
+        const visible = filterPokemons(
+            [pokemon],
+            activeFilter,
+            activeSearch,
+            favourites,
+            activeGeneration
+        ).length > 0;
+
+        card.style.display = visible ? "" : "none";
         fragment.appendChild(card);
     });
 
@@ -76,9 +85,9 @@ async function initPokemons(): Promise<void> {
     try {
         await fetchAllPokemons((chunk) => {
             pokemons.push(...chunk); 
-            renderInitialPokemons(pokemons);
-            applyFilters();           
+            appendPokemonCards(chunk);
         });
+        isInitialLoading = false;
         restoreScroll();
 
     } catch (error) {
@@ -264,7 +273,7 @@ function applyFilters(): void {
             : "none";
     });
 
-    if (filtered.size === 0) {
+    if (filtered.size === 0 && !isInitialLoading) {
         createMissingCard(activeSearch || activeFilter);
     } else {
         removeMissingCard();

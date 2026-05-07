@@ -75,7 +75,7 @@ var ID_PAD_LENGTH = 3;
 var WEIGHT_DIVISOR = 10;
 var HEIGHT_DIVISOR = 10;
 var MAX_STAT_LIMIT = 255;
-var INITIAL_FAKE_CARDS = 20;
+var INITIAL_FAKE_CARDS = 0;
 var cardHolder = document.getElementById("card_holder");
 var searchInput = document.getElementById("searchInput");
 var filterPanel = document.getElementById("filter_panel");
@@ -86,6 +86,7 @@ var activeSearch = sessionStorage.getItem("activeSearch") ?? "";
 var isPanelOpen = false;
 var activeTab = "types";
 var lastSavedScroll = 0;
+var isInitialLoading = true;
 searchInput.value = activeSearch;
 async function fetchPokemonList() {
   const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
@@ -113,12 +114,13 @@ async function fetchAllPokemons(onChunkLoaded) {
     onChunkLoaded(chunk);
   }
 }
-function renderInitialPokemons(pokemons2) {
-  cardHolder.innerHTML = "";
+function appendPokemonCards(newPokemons) {
   const fragment = document.createDocumentFragment();
-  pokemons2.forEach((pokemon) => {
+  newPokemons.forEach((pokemon) => {
     const card = createPokemonCard(pokemon);
     pokemonCards.set(pokemon.id, card);
+    const visible = filterPokemons([pokemon], activeFilter, activeSearch, favourites, activeGeneration).length > 0;
+    card.style.display = visible ? "" : "none";
     fragment.appendChild(card);
   });
   cardHolder.appendChild(fragment);
@@ -127,9 +129,9 @@ async function initPokemons() {
   try {
     await fetchAllPokemons((chunk) => {
       pokemons.push(...chunk);
-      renderInitialPokemons(pokemons);
-      applyFilters();
+      appendPokemonCards(chunk);
     });
+    isInitialLoading = false;
     restoreScroll();
   } catch (error) {
     createErrorCard(error);
@@ -270,7 +272,7 @@ function applyFilters() {
   pokemonCards.forEach((card, id) => {
     card.style.display = filtered.has(id) ? "" : "none";
   });
-  if (filtered.size === 0) {
+  if (filtered.size === 0 && !isInitialLoading) {
     createMissingCard(activeSearch || activeFilter);
   } else {
     removeMissingCard();
