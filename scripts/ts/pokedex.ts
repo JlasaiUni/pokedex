@@ -2,6 +2,7 @@ import { type Pokemon, type PokemonBasic, POKEMON_TYPES, type PokemonType, GENER
 
 const pokemons: PokemonBasic[] = [];
 const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
+const pokemonDetailsCache: Map<number, Pokemon> = new Map();
 const LOAD_SIZE_POKEMONS = 1118;
 const SCROLL_SAVE_THRESHOLD = 10;
 const ID_PAD_LENGTH = 3;
@@ -25,9 +26,7 @@ searchInput.value = activeSearch;
 
 
 async function fetchPokemonList(): Promise<{ name: string; url: string }[]> {
-    const response = await fetch(
-        `https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`
-    );
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json() as { results: { name: string; url: string }[] };
     return data.results;
@@ -41,19 +40,15 @@ function toPokemonBasic(p: PokeAPIResponse): PokemonBasic {
     };
 }
 
-async function fetchChunk(
-    entries: { name: string; url: string }[]
-): Promise<PokemonBasic[]> {
+async function fetchChunk(entries: { name: string; url: string }[]): Promise<PokemonBasic[]> {
     const responses: PokeAPIResponse[] = await Promise.all(
         entries.map(e => fetch(e.url).then(r => r.json()))
     );
     return responses.map(toPokemonBasic);
 }
 
-async function fetchAllPokemons(
-    onChunkLoaded: (chunk: PokemonBasic[]) => void
-): Promise<void> {
-    const CHUNK_SIZE = 50;
+async function fetchAllPokemons(onChunkLoaded: (chunk: PokemonBasic[]) => void): Promise<void> {
+    const CHUNK_SIZE = 100;
     const list = await fetchPokemonList();
 
     for (let i = 0; i < list.length; i += CHUNK_SIZE) {
@@ -76,6 +71,13 @@ async function initPokemons(): Promise<void> {
 }
 
 async function fetchPokemonDetails(id: number, card: HTMLElement): Promise<void> {
+    const cachedPokemon = pokemonDetailsCache.get(id);
+
+    if (cachedPokemon) {
+        fillCard(card, cachedPokemon);
+        return;
+    }
+
     try {
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
         const p = await response.json() as PokeAPIResponse;
@@ -98,7 +100,7 @@ async function fetchPokemonDetails(id: number, card: HTMLElement): Promise<void>
         };
 
         fillCard(card, details);
-
+        pokemonDetailsCache.set(id, details);
     } catch (error) {
         console.error(`Error loading details for pokemon ${id}`, error);
     }

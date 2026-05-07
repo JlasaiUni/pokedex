@@ -67,6 +67,7 @@ function toggleFavorite(favourites, id) {
 // scripts/ts/pokedex.ts
 var pokemons = [];
 var favourites = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
+var pokemonDetailsCache = new Map;
 var LOAD_SIZE_POKEMONS = 1118;
 var SCROLL_SAVE_THRESHOLD = 10;
 var ID_PAD_LENGTH = 3;
@@ -104,7 +105,7 @@ async function fetchChunk(entries) {
   return responses.map(toPokemonBasic);
 }
 async function fetchAllPokemons(onChunkLoaded) {
-  const CHUNK_SIZE = 50;
+  const CHUNK_SIZE = 100;
   const list = await fetchPokemonList();
   for (let i = 0;i < list.length; i += CHUNK_SIZE) {
     const chunk = await fetchChunk(list.slice(i, i + CHUNK_SIZE));
@@ -123,6 +124,11 @@ async function initPokemons() {
   }
 }
 async function fetchPokemonDetails(id, card) {
+  const cachedPokemon = pokemonDetailsCache.get(id);
+  if (cachedPokemon) {
+    fillCard(card, cachedPokemon);
+    return;
+  }
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
     const p = await response.json();
@@ -143,6 +149,7 @@ async function fetchPokemonDetails(id, card) {
       }
     };
     fillCard(card, details);
+    pokemonDetailsCache.set(id, details);
   } catch (error) {
     console.error(`Error loading details for pokemon ${id}`, error);
   }
