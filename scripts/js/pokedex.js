@@ -76,17 +76,19 @@ var pokemons = [];
 var favourites = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 var pokemonDetailsCache = new Map;
 var pokemonCards = new Map;
-var LOAD_SIZE_POKEMONS = 1118;
-var SCROLL_SAVE_THRESHOLD = 10;
+var TOTAL_POKEMONS = 1118;
+var SCROLL_SAVE_THRESHOLD = 5;
 var ID_PAD_LENGTH = 3;
 var WEIGHT_DIVISOR = 10;
 var HEIGHT_DIVISOR = 10;
 var MAX_STAT_LIMIT = 255;
 var INITIAL_FAKE_CARDS = 0;
+var SPACER_ID = "scroll_spacer";
 var cardHolder = document.getElementById("card_holder");
 var searchInput = document.getElementById("searchInput");
 var filterPanel = document.getElementById("filter_panel");
 var filterButton = document.getElementById("filter_button");
+var progressBar = document.getElementById("progress_bar_carga");
 var activeFilter = sessionStorage.getItem("activeFilter") ?? "all";
 var activeGeneration = sessionStorage.getItem("activeGeneration") ?? "all";
 var activeSearch = sessionStorage.getItem("activeSearch") ?? "";
@@ -94,9 +96,10 @@ var isPanelOpen = false;
 var activeTab = "types";
 var lastSavedScroll = 0;
 var isInitialLoading = true;
+var loadedPokemons = 0;
 searchInput.value = activeSearch;
 async function fetchPokemonList() {
-  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
+  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${TOTAL_POKEMONS}`);
   if (!response.ok)
     throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
@@ -114,6 +117,21 @@ async function fetchAllPokemons(onChunkLoaded) {
     onChunkLoaded(chunk);
   }
 }
+async function initPokemons() {
+  addScrollSpacer();
+  restoreScroll();
+  try {
+    await fetchAllPokemons((chunk) => {
+      pokemons.push(...chunk);
+      appendPokemonCards(chunk);
+      updateProgressBar(chunk.length);
+    });
+    isInitialLoading = false;
+    removeScrollSpacer();
+  } catch (error) {
+    createErrorCard(error);
+  }
+}
 function appendPokemonCards(newPokemons) {
   const fragment = document.createDocumentFragment();
   newPokemons.forEach((pokemon) => {
@@ -125,16 +143,15 @@ function appendPokemonCards(newPokemons) {
   });
   cardHolder.appendChild(fragment);
 }
-async function initPokemons() {
-  try {
-    await fetchAllPokemons((chunk) => {
-      pokemons.push(...chunk);
-      appendPokemonCards(chunk);
-    });
-    isInitialLoading = false;
-    restoreScroll();
-  } catch (error) {
-    createErrorCard(error);
+function updateProgressBar(chunkSize) {
+  loadedPokemons += chunkSize;
+  const percent = Math.min(loadedPokemons / TOTAL_POKEMONS * 100, 100);
+  progressBar.style.width = `${percent}%`;
+  if (percent >= 100) {
+    setTimeout(() => {
+      progressBar.style.opacity = "0";
+      progressBar.style.transition = "width 0.3s ease, opacity 0.5s ease";
+    }, 300);
   }
 }
 async function fetchPokemonDetails(id, card) {
@@ -212,6 +229,19 @@ function restoreScroll() {
   if (savedScroll !== null) {
     window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
   }
+}
+function addScrollSpacer() {
+  const savedScroll = sessionStorage.getItem("scrollPos");
+  if (!savedScroll)
+    return;
+  const spacer = document.createElement("div");
+  spacer.id = SPACER_ID;
+  spacer.style.height = `${parseInt(savedScroll) + window.innerHeight}px`;
+  spacer.style.pointerEvents = "none";
+  cardHolder.appendChild(spacer);
+}
+function removeScrollSpacer() {
+  document.getElementById(SPACER_ID)?.remove();
 }
 function renderPanelFiltros() {
   filterPanel.innerHTML = `

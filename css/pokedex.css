@@ -34,6 +34,16 @@ nav{
     position: relative;
     padding: 1em 0;
 }
+#progress_bar_carga {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background-color: #3b82f6;
+    z-index: 9999;
+    transition: width 0.3s ease;
+}
 #filter_wrapper {
     position: relative;
     display: flex;

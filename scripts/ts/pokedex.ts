@@ -4,18 +4,20 @@ const pokemons: PokemonBasic[] = [];
 const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
 const pokemonDetailsCache: Map<number, Pokemon> = new Map();
 const pokemonCards = new Map<number, HTMLAnchorElement>();
-const LOAD_SIZE_POKEMONS = 1118;
-const SCROLL_SAVE_THRESHOLD = 10;
+const TOTAL_POKEMONS = 1118;
+const SCROLL_SAVE_THRESHOLD = 5;
 const ID_PAD_LENGTH = 3;
 const WEIGHT_DIVISOR = 10;  // hectogramos -> kg
 const HEIGHT_DIVISOR = 10;  // decimetros -> m
-const MAX_STAT_LIMIT:number = 255;
+const MAX_STAT_LIMIT = 255;
 const INITIAL_FAKE_CARDS = 0; // esto esta a 0 porque no hace falta y no funciona bien con appendPokemonCards
+const SPACER_ID = "scroll_spacer";
 
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
 const searchInput = document.getElementById("searchInput") as HTMLInputElement;
 const filterPanel = document.getElementById("filter_panel") as HTMLElement;
 const filterButton = document.getElementById("filter_button") as HTMLElement;
+const progressBar = document.getElementById("progress_bar_carga") as HTMLElement;
 
 let activeFilter: PokemonType = (sessionStorage.getItem("activeFilter") ?? "all") as PokemonType;
 let activeGeneration: Generation = (sessionStorage.getItem("activeGeneration") ?? "all") as Generation;
@@ -24,11 +26,12 @@ let isPanelOpen: boolean = false;
 let activeTab: "types" | "generations" = "types";
 let lastSavedScroll = 0;
 let isInitialLoading = true;
+let loadedPokemons = 0;
 searchInput.value = activeSearch;
 
 
 async function fetchPokemonList(): Promise<{ name: string; url: string }[]> {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${LOAD_SIZE_POKEMONS}`);
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/?limit=${TOTAL_POKEMONS}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json() as { results: { name: string; url: string }[] };
     return data.results;
@@ -48,6 +51,23 @@ async function fetchAllPokemons(onChunkLoaded: (chunk: PokemonBasic[]) => void):
     for (let i = 0; i < list.length; i += CHUNK_SIZE) {
         const chunk = await fetchChunk(list.slice(i, i + CHUNK_SIZE));
         onChunkLoaded(chunk);
+    }
+}
+
+async function initPokemons(): Promise<void> {
+    addScrollSpacer();
+    restoreScroll();
+    try {
+        await fetchAllPokemons((chunk) => {
+            pokemons.push(...chunk); 
+            appendPokemonCards(chunk);
+            updateProgressBar(chunk.length);
+        });
+        isInitialLoading = false;
+        removeScrollSpacer();
+
+    } catch (error) {
+        createErrorCard(error);
     }
 }
 
@@ -73,17 +93,16 @@ function appendPokemonCards(newPokemons: PokemonBasic[]): void {
     cardHolder.appendChild(fragment);
 }
 
-async function initPokemons(): Promise<void> {
-    try {
-        await fetchAllPokemons((chunk) => {
-            pokemons.push(...chunk); 
-            appendPokemonCards(chunk);
-        });
-        isInitialLoading = false;
-        restoreScroll();
+function updateProgressBar(chunkSize: number): void {
+    loadedPokemons += chunkSize;
+    const percent = Math.min((loadedPokemons / TOTAL_POKEMONS) * 100, 100); //math min para evitar que pase de 100% 
+    progressBar.style.width = `${percent}%`;
 
-    } catch (error) {
-        createErrorCard(error);
+    if (percent >= 100) {
+        setTimeout(() => {
+            progressBar.style.opacity = "0";
+            progressBar.style.transition = "width 0.3s ease, opacity 0.5s ease";
+        }, 300);
     }
 }
 
@@ -174,6 +193,21 @@ function restoreScroll(): void {
     if (savedScroll !== null) {
         window.scrollTo({ top: parseInt(savedScroll), behavior: "instant" });
     }
+}
+
+function addScrollSpacer(): void {
+    const savedScroll = sessionStorage.getItem("scrollPos");
+    if (!savedScroll) return;
+
+    const spacer = document.createElement("div");
+    spacer.id = SPACER_ID;
+    spacer.style.height = `${parseInt(savedScroll) + window.innerHeight}px`;
+    spacer.style.pointerEvents = "none";
+    cardHolder.appendChild(spacer);
+}
+
+function removeScrollSpacer(): void {
+    document.getElementById(SPACER_ID)?.remove();
 }
 
 function renderPanelFiltros(): void {
