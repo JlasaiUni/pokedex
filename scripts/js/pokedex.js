@@ -63,6 +63,13 @@ function toggleFavorite(favourites, id) {
     return true;
   }
 }
+function toPokemonBasic(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    types: p.types.map((t) => t.type.name)
+  };
+}
 
 // scripts/ts/pokedex.ts
 var pokemons = [];
@@ -94,13 +101,6 @@ async function fetchPokemonList() {
     throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
   return data.results;
-}
-function toPokemonBasic(p) {
-  return {
-    id: p.id,
-    name: p.name,
-    types: p.types.map((t) => t.type.name)
-  };
 }
 async function fetchChunk(entries) {
   const responses = await Promise.all(entries.map((e) => fetch(e.url).then((r) => r.json())));

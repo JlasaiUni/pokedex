@@ -63,8 +63,16 @@ function toggleFavorite(favourites, id) {
     return true;
   }
 }
+function toPokemonBasic(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    types: p.types.map((t) => t.type.name)
+  };
+}
 export {
   toggleFavorite,
+  toPokemonBasic,
   filterPokemons,
   SPECIAL_POKEMON_THRESHOLD,
   POKEMON_TYPES,

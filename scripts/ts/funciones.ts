@@ -87,3 +87,11 @@ export function toggleFavorite(favourites: Set<number>, id: number): boolean {
         return true;
     }
 }
+
+export function toPokemonBasic(p: PokeAPIResponse): PokemonBasic {
+    return {
+        id:    p.id,
+        name:  p.name,
+        types: p.types.map(t => t.type.name),
+    };
+}

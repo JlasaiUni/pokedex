@@ -1,4 +1,4 @@
-import { type Pokemon, type PokemonBasic, POKEMON_TYPES, type PokemonType, GENERATIONS, type Generation, GEN_RANGES, filterPokemons, toggleFavorite, type PokeAPIResponse} from "./funciones";
+import { type Pokemon, type PokemonBasic, POKEMON_TYPES, type PokemonType, GENERATIONS, type Generation, GEN_RANGES, filterPokemons, toggleFavorite, type PokeAPIResponse, toPokemonBasic} from "./funciones";
 
 const pokemons: PokemonBasic[] = [];
 const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
@@ -32,14 +32,6 @@ async function fetchPokemonList(): Promise<{ name: string; url: string }[]> {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json() as { results: { name: string; url: string }[] };
     return data.results;
-}
-
-function toPokemonBasic(p: PokeAPIResponse): PokemonBasic {
-    return {
-        id:    p.id,
-        name:  p.name,
-        types: p.types.map(t => t.type.name),
-    };
 }
 
 async function fetchChunk(entries: { name: string; url: string }[]): Promise<PokemonBasic[]> {

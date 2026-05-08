@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { filterPokemons, toggleFavorite, POKEMON_TYPES, type PokemonBasic } from "./funciones";
-import { GEN_RANGES } from "./funciones";
+import { filterPokemons, toggleFavorite, POKEMON_TYPES, toPokemonBasic} from "./funciones";
+import { GEN_RANGES, type PokemonBasic, type PokeAPIResponse} from "./funciones";
 
 // ─── Datos de prueba ───────────────────────────────────────────────────────────
 
@@ -300,6 +300,8 @@ describe("TIPOS", () => {
     });
 });
 
+// ─── GENERACIONES ────────────────────────────────────────────────────────────────────
+
 describe("GEN_RANGES", () => {
 
     it("gen1 tiene rango correcto", () => {
@@ -340,4 +342,26 @@ describe("GEN_RANGES", () => {
         expect(resultado.some(p => p.id === 151)).toBe(true);
     });
 
+});
+
+// ─── toPokemonBasic ────────────────────────────────────────────────────────────────────
+
+describe("toPokemonBasic", () => {
+  it("mapea correctamente un PokeAPIResponse", () => {
+    const input = {
+      id: 1,
+      name: "bulbasaur",
+      weight: 69,
+      height: 7,
+      sprites: { other: { "official-artwork": { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" } } },
+      types: [{ type: { name: "grass" } }, { type: { name: "poison" } }],
+      stats: [{ base_stat: 45 }, { base_stat: 65 }, { base_stat: 49 }, { base_stat: 49 }, { base_stat: 65 }, { base_stat: 45 }],
+    };
+
+    expect(toPokemonBasic(input)).toEqual({
+      id: 1,
+      name: "bulbasaur",
+      types: ["grass", "poison"],
+    });
+  });
 });
