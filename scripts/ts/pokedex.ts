@@ -7,10 +7,9 @@ const pokemonCards = new Map<number, HTMLAnchorElement>();
 const TOTAL_POKEMONS = 1118;
 const SCROLL_SAVE_THRESHOLD = 5;
 const ID_PAD_LENGTH = 3;
-const WEIGHT_DIVISOR = 10;  // hectogramos -> kg
-const HEIGHT_DIVISOR = 10;  // decimetros -> m
+const WEIGHT_DIVISOR = 10;  // hectograms -> kg
+const HEIGHT_DIVISOR = 10;  // decimeters -> m
 const MAX_STAT_LIMIT = 255;
-const INITIAL_FAKE_CARDS = 0; // esto esta a 0 porque no hace falta y no funciona bien con appendPokemonCards
 const SPACER_ID = "scroll_spacer";
 
 const cardHolder = document.getElementById("card_holder") as HTMLElement;
@@ -95,7 +94,7 @@ function appendPokemonCards(newPokemons: PokemonBasic[]): void {
 
 function updateProgressBar(chunkSize: number): void {
     loadedPokemons += chunkSize;
-    const percent = Math.min((loadedPokemons / TOTAL_POKEMONS) * 100, 100); //math min para evitar que pase de 100% 
+    const percent = Math.min((loadedPokemons / TOTAL_POKEMONS) * 100, 100); // Prevents exceeding 100% if the API returns more pokémons than expected
     progressBar.style.width = `${percent}%`;
 
     if (percent >= 100) {
@@ -106,37 +105,38 @@ function updateProgressBar(chunkSize: number): void {
     }
 }
 
-async function fetchPokemonDetails(id: number, card: HTMLElement): Promise<void> {
-    const cachedPokemon = pokemonDetailsCache.get(id);
+async function fetchPokemonDetails(id: number): Promise<Pokemon> {
+    const cached = pokemonDetailsCache.get(id);
+    if (cached) return cached;
 
-    if (cachedPokemon) {
-        fillCard(card, cachedPokemon);
-        return;
-    }
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+    const p = await response.json() as PokeAPIResponse;
 
+    const details: Pokemon = {
+        id: p.id,
+        name: p.name,
+        weight: p.weight,
+        height: p.height,
+        image: p.sprites.other["official-artwork"].front_default,
+        types: p.types.map((t: PokeAPIResponse["types"][number]) => t.type.name),
+        stats: {
+            hp:             p.stats[0]?.base_stat || 0,
+            attack:         p.stats[1]?.base_stat || 0,
+            defense:        p.stats[2]?.base_stat || 0,
+            specialAttack:  p.stats[3]?.base_stat || 0,
+            specialDefense: p.stats[4]?.base_stat || 0,
+            speed:          p.stats[5]?.base_stat || 0,
+        }
+    };
+
+    pokemonDetailsCache.set(id, details);
+    return details;
+}
+
+async function loadAndFillCard(id: number, card: HTMLElement): Promise<void> {
     try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-        const p = await response.json() as PokeAPIResponse;
-
-        const details: Pokemon = {
-            id: p.id,
-            name: p.name,
-            weight: p.weight,
-            height: p.height,
-            image: p.sprites.other["official-artwork"].front_default,
-            types: p.types.map((t: PokeAPIResponse["types"][number]) => t.type.name),
-            stats: {
-                hp:             p.stats[0]?.base_stat || 0,
-                attack:         p.stats[1]?.base_stat || 0,
-                defense:        p.stats[2]?.base_stat || 0,
-                specialAttack:  p.stats[3]?.base_stat || 0,
-                specialDefense: p.stats[4]?.base_stat || 0,
-                speed:          p.stats[5]?.base_stat || 0,
-            }
-        };
-
+        const details = await fetchPokemonDetails(id);
         fillCard(card, details);
-        pokemonDetailsCache.set(id, details);
     } catch (error) {
         console.error(`Error loading details for pokemon ${id}`, error);
     }
@@ -169,12 +169,12 @@ function fillCard(card: HTMLElement, pokemon: Pokemon): void {
     });
 }
 
-const detailsObserver = new IntersectionObserver((entries) => {  //Para detectar que card esta en pantalla (y fetchear los detalles/foto)
+const detailsObserver = new IntersectionObserver((entries) => { // Lazy-load details only when the card enters the viewport
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             const card = entry.target as HTMLElement;
             const id = parseInt(card.dataset["id"]!);
-            fetchPokemonDetails(id, card);
+            loadAndFillCard(id, card);
             detailsObserver.unobserve(card);
         }
     });
@@ -240,13 +240,11 @@ function closePanel(): void {
     isPanelOpen = false;
 }
 
-//Boton panel de filters
 filterButton.addEventListener("click", (e: MouseEvent) => {
     e.stopPropagation();
     isPanelOpen ? closePanel() : openPanel();
 });
 
-//click al boton de un filter 
 filterPanel.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
@@ -269,7 +267,6 @@ filterPanel.addEventListener("click", (e: MouseEvent) => {
     }
 });
 
-//searchInput
 searchInput.addEventListener("input", (event: Event) => { 
     event.preventDefault();
     activeSearch = searchInput.value.toLowerCase();
@@ -277,7 +274,6 @@ searchInput.addEventListener("input", (event: Event) => {
 });
 
 function applyFilters(): void {
-
     sessionStorage.setItem("activeFilter", activeFilter);
     sessionStorage.setItem("activeGeneration", activeGeneration);
     sessionStorage.setItem("activeSearch", activeSearch);
@@ -307,7 +303,6 @@ function applyFilters(): void {
 }
 
 function removeMissingCard(): void {
-
     const missing = cardHolder.querySelector(".card_missing");
 
     if (missing) {
@@ -315,19 +310,18 @@ function removeMissingCard(): void {
     }
 }
 
-function loadPokemons(pokemons: PokemonBasic[], msg?: string): void {
-    cardHolder.innerHTML = "";
+function buildTypesHTML(types: string[]): string {
+    return types.map(t => `<p class="type type_${t}">${t}</p>`).join("");
+}
 
-    if (pokemons.length > 0) {
-        const cards = document.createDocumentFragment();
-        pokemons.forEach(pokemon => {
-            const card = createPokemonCard(pokemon);
-            cards.appendChild(card);
-        });
-        cardHolder.appendChild(cards);
-    } else {
-        createMissingCard(msg);
-    }
+function buildStatsHTML(): string {
+    return ["HP","ATK","DEF","SAT","SDF","SPD"].map(stat => `
+        <div class="${stat}">
+            <p class="stat_title">${stat}</p>
+            <p class="stat_num">-</p>
+            <div class="progress"><div class="progress_bar" style="width:0%"></div></div>
+        </div>
+    `).join("");
 }
 
 function buildCardHTML(pokemon: PokemonBasic, isFavourite: boolean): string {
@@ -337,31 +331,16 @@ function buildCardHTML(pokemon: PokemonBasic, isFavourite: boolean): string {
                 <p class="card_name"><strong>${pokemon.name}</strong></p>
                 <p class="card_number"><strong>#${String(pokemon.id).padStart(ID_PAD_LENGTH, '0')}</strong></p>
             </header>
-
             <section class="card_main">
                 <button class="fav_btn ${isFavourite ? 'fav_activo' : ''}" data-id="${pokemon.id}"></button>
-
                 <img class="img_pokemon" src="" alt="foto de ${pokemon.name}">
-
-                <div class="type_holder">
-                    ${pokemon.types.map(t => `<p class="type type_${t}">${t}</p>`).join("")}
-                </div>
-
+                <div class="type_holder">${buildTypesHTML(pokemon.types)}</div>
                 <div class="characteristics_holder">
                     <p class="weight">...</p>
                     <div class="separation_line"></div>
                     <p class="height">...</p>
                 </div>
-
-                <div class="stats_holder">
-                    ${["HP","ATK","DEF","SAT","SDF","SPD"].map(stat => `
-                        <div class="${stat}">
-                            <p class="stat_title">${stat}</p>
-                            <p class="stat_num">-</p>
-                            <div class="progress"><div class="progress_bar" style="width:0%"></div></div>
-                        </div>
-                    `).join("")}
-                </div>
+                <div class="stats_holder">${buildStatsHTML()}</div>
             </section>
         </article>
     `;
@@ -399,52 +378,30 @@ function createPokemonCard(pokemon: PokemonBasic): HTMLAnchorElement {
     return card;
 }
 
-function createFakeCard(amount: number): void {
-    cardHolder.innerHTML = "";
-    const cards = document.createDocumentFragment();
+function createStatusCard(className: string, imgSrc: string, ...lines: string[]): void {
+    removeMissingCard();
 
-    for (let i = 0; i < amount; i++) {
-        const card = document.createElement("div");
+    const card = document.createElement("div");
+    card.classList.add(className);
+    card.innerHTML = `
+        <img src="${imgSrc}" alt="">
+        ${lines.map(line => `<p>${line}</p>`).join("")}
+    `;
 
-        card.classList.add("card_fake");
-        card.innerHTML = `
-            <section class="card_fake_main"><img src="../img/Pokeball.png" alt=""></section>
-        `;
-
-        cards.appendChild(card);
-    }
-
-    cardHolder.appendChild(cards);
+    cardHolder.appendChild(card);
 }
 
 function createMissingCard(msg?: string): void {
-    removeMissingCard();
-    const errorCard = document.createElement("div");
-    errorCard.classList.add("card_missing");
-
-    errorCard.innerHTML = `
-        <img src="../img/PokeNot.png" alt="">
-        <p>There is no results for "${msg}".</p>
-    `;
-
-    cardHolder.appendChild(errorCard);
+    createStatusCard("card_missing", "../img/PokeNot.png", `There is no results for "${msg}".`);
 }
 
 function createErrorCard(error: unknown): void {
-    removeMissingCard();
-    const errorCard = document.createElement("div");
-    errorCard.classList.add("card_missing");
-
     cardHolder.innerHTML = "";
-
-    errorCard.innerHTML = `
-        <img src="../img/Alert.png" alt="">
-        <p>An error occurred getting Pokémons.</p>
-        <p>Please, try it later (${error})</p>
-    `;
-
-    cardHolder.appendChild(errorCard);
+    createStatusCard("card_missing", "../img/Alert.png", "An error occurred getting Pokémons.", `Please, try it later (${error})`);
 }
 
-createFakeCard(INITIAL_FAKE_CARDS);
+function createFakeCard(amount: number): void { // For future use, as placeholders
+    createStatusCard("card_fake", "../img/Pokeball.png");
+}
+
 initPokemons();
