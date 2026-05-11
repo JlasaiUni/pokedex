@@ -1,92 +1,102 @@
 // scripts/ts/cardDetallado.ts
+var MAX_STAT_LIMIT = 255;
+var WEIGHT_DIVISOR = 10;
+var HEIGHT_DIVISOR = 10;
+var ID_PAD_LENGTH = 3;
+var ARTWORK_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
+function urlToId(url) {
+  return parseInt(url.split("/").filter(Boolean).at(-1));
+}
+function extractStages(link) {
+  const stages = [];
+  function walk(node, depth) {
+    (stages[depth] ??= []).push(urlToId(node.species.url));
+    for (const next of node.evolves_to)
+      walk(next, depth + 1);
+  }
+  walk(link, 0);
+  return stages;
+}
+function formatName(name) {
+  return name.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+function artworkUrl(pokemonId) {
+  return ARTWORK_BASE + "/" + String(pokemonId) + ".png";
+}
+function buildTypesHTML(types) {
+  return types.map((t) => '<p class="type type_' + t.type.name + '">' + t.type.name + "</p>").join("");
+}
+function buildStatsHTML(stats) {
+  const names = ["HP", "ATK", "DEF", "SAT", "SDF", "SPD"];
+  return stats.slice(0, 6).map((s, i) => {
+    const pct = s.base_stat / MAX_STAT_LIMIT * 100;
+    return '<div class="' + names[i] + '"><p class="stat_title">' + names[i] + '</p><p class="stat_num">' + s.base_stat + '</p><div class="progress"><div class="progress_bar" style="width:' + pct + '%"></div></div></div>';
+  }).join("");
+}
+function buildEvoLinkHTML(evoId, currentId) {
+  const cls = evoId === currentId ? "evo_pokemon evo_current" : "evo_pokemon";
+  const num = "#" + String(evoId).padStart(ID_PAD_LENGTH, "0");
+  const href = "cardDetallado.html?id=" + String(evoId);
+  const img = '<img src="' + artworkUrl(evoId) + '" alt="Pokemon ' + num + '" onerror="this.style.opacity=&apos;0.15&apos;">';
+  return '<a href="' + href + '" class="' + cls + '">' + img + "<p>" + num + "</p></a>";
+}
+function buildStageHTML(stage, currentId) {
+  return '<div class="evo_stage">' + stage.map((evoId) => buildEvoLinkHTML(evoId, currentId)).join("") + "</div>";
+}
+function buildEvolutionHTML(chain, currentId) {
+  if (!chain)
+    return "";
+  const stages = extractStages(chain);
+  if (stages.length <= 1)
+    return "";
+  const arrow = '<div class="evo_arrow"></div>';
+  const html = stages.map((stage) => buildStageHTML(stage, currentId)).join(arrow);
+  return '<div class="section_label">Evoluciones</div><div class="evo_chain">' + html + "</div>";
+}
+function buildFormCardHTML(form) {
+  const href = "cardDetallado.html?id=" + String(form.id);
+  const img = '<img src="' + artworkUrl(form.id) + '" alt="' + form.name + '" onerror="this.style.opacity=&apos;0.15&apos;">';
+  return '<a href="' + href + '" class="form_card">' + img + '<p class="form_name">' + formatName(form.name) + '</p><div class="form_types">' + buildTypesHTML(form.types) + "</div></a>";
+}
+function buildFormsHTML(forms) {
+  if (forms.length === 0)
+    return "";
+  return '<div class="section_label">Formas especiales</div><div class="forms_holder">' + forms.map(buildFormCardHTML).join("") + "</div>";
+}
+function createDetailCard(pokemon, chain, forms) {
+  const holder = document.getElementById("card_detallado_holder");
+  const abilitiesHTML = pokemon.abilities.map((a) => '<span class="ability_tag">' + a.ability.name + "</span>").join("");
+  const artworkSrc = pokemon.sprites.other["official-artwork"].front_default;
+  const paddedId = "#" + String(pokemon.id).padStart(ID_PAD_LENGTH, "0");
+  holder.innerHTML = '<article class="card_detallada">' + '<header class="card_detallada_header">' + '<p class="card_detallada_name"><strong>' + pokemon.name + "</strong></p>" + '<p class="card_detallada_number"><strong>' + paddedId + "</strong></p>" + "</header>" + '<img class="img_pokemon_grande" src="' + artworkSrc + '" alt="foto de ' + pokemon.name + '">' + '<section class="card_detallada_main">' + '<div class="type_holder_detallado">' + buildTypesHTML(pokemon.types) + "</div>" + '<div class="characteristics_holder_detallado">' + '<p class="weight">' + pokemon.weight / WEIGHT_DIVISOR + " kg</p>" + '<div class="separation_line"></div>' + '<p class="height">' + pokemon.height / HEIGHT_DIVISOR + " m</p>" + "</div>" + '<div class="abilities_holder">' + '<p class="abilities_title">Abilities</p>' + '<div class="abilities_list">' + abilitiesHTML + "</div>" + "</div>" + '<div class="stats_holder_detallado">' + buildStatsHTML(pokemon.stats) + "</div>" + buildEvolutionHTML(chain, pokemon.id) + buildFormsHTML(forms) + '<a id="btn_volver" href="pokedex.html" class="btn_volver">Volver</a>' + "</section></article>";
+}
 var cardHolder = document.getElementById("card_detallado_holder");
-var maxStatLimit = 255;
 var params = new URLSearchParams(window.location.search);
 var id = parseInt(params.get("id") ?? "0");
-var pokemon = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)).json();
-if (pokemon) {
-  createDetailCard(pokemon);
-} else {
-  cardHolder.innerHTML = "<p>Pokémon no encontrado.</p>";
+if (!id) {
+  cardHolder.innerHTML = "<p>ID de Pokemon invalido.</p>";
+  throw new Error("Invalid pokemon ID");
 }
-function createDetailCard(pokemon2) {
-  const stats = {
-    hp: pokemon2.stats[0]?.base_stat ?? 0,
-    attack: pokemon2.stats[1]?.base_stat ?? 0,
-    defense: pokemon2.stats[2]?.base_stat ?? 0,
-    specialAttack: pokemon2.stats[3]?.base_stat ?? 0,
-    specialDefense: pokemon2.stats[4]?.base_stat ?? 0,
-    speed: pokemon2.stats[5]?.base_stat ?? 0
-  };
-  const abilitiesHTML = pokemon2.abilities.map((a) => `<span class="ability_tag">${a.ability.name}</span>`).join("");
-  const typesHTML = pokemon2.types.map((t) => `<p class="type type_${t.type.name}">${t.type.name}</p>`).join("");
-  cardHolder.innerHTML = `
-        <article class="card_detallada">
-
-            <header class="card_detallada_header">
-                <p class="card_detallada_name"><strong>${pokemon2.name}</strong></p>
-                <p class="card_detallada_number"><strong>#${pokemon2.id}</strong></p>
-            </header>
-
-            <img class="img_pokemon_grande"
-                 src="${pokemon2.sprites.other["official-artwork"].front_default}"
-                 alt="foto de ${pokemon2.name}">
-
-            <section class="card_detallada_main">
-
-                <div class="type_holder_detallado">
-                    ${typesHTML}
-                </div>
-
-                <div class="characteristics_holder_detallado">
-                    <p class="weight">${pokemon2.weight / 10} kg</p>
-                    <div class="separation_line"></div>
-                    <p class="height">${pokemon2.height / 10} m</p>
-                </div>
-
-                <div class="abilities_holder">
-                    <p class="abilities_title">Abilities</p>
-                    <div class="abilities_list">
-                        ${abilitiesHTML}
-                    </div>
-                </div>
-
-                <div class="stats_holder_detallado">
-                    <div class="HP">
-                        <p class="stat_title">HP</p>
-                        <p class="stat_num">${stats.hp}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${stats.hp / maxStatLimit * 100}%"></div></div>
-                    </div>
-                    <div class="ATK">
-                        <p class="stat_title">ATK</p>
-                        <p class="stat_num">${stats.attack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${stats.attack / maxStatLimit * 100}%"></div></div>
-                    </div>
-                    <div class="DEF">
-                        <p class="stat_title">DEF</p>
-                        <p class="stat_num">${stats.defense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${stats.defense / maxStatLimit * 100}%"></div></div>
-                    </div>
-                    <div class="SAT">
-                        <p class="stat_title">SAT</p>
-                        <p class="stat_num">${stats.specialAttack}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${stats.specialAttack / maxStatLimit * 100}%"></div></div>
-                    </div>
-                    <div class="SDF">
-                        <p class="stat_title">SDF</p>
-                        <p class="stat_num">${stats.specialDefense}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${stats.specialDefense / maxStatLimit * 100}%"></div></div>
-                    </div>
-                    <div class="SPD">
-                        <p class="stat_title">SPD</p>
-                        <p class="stat_num">${stats.speed}</p>
-                        <div class="progress"><div class="progress_bar" style="width: ${stats.speed / maxStatLimit * 100}%"></div></div>
-                    </div>
-                </div>
-
-                <a id="btn_volver" href="pokedex.html" class="btn_volver">← Volver</a>
-
-            </section>
-        </article>
-    `;
+try {
+  const [pokemon, species] = await Promise.all([
+    fetch("https://pokeapi.co/api/v2/pokemon/" + String(id)).then((r) => {
+      if (!r.ok)
+        throw new Error("HTTP " + r.status);
+      return r.json();
+    }),
+    fetch("https://pokeapi.co/api/v2/pokemon-species/" + String(id)).then((r) => r.ok ? r.json() : null).catch(() => null)
+  ]);
+  let chain = null;
+  let forms = [];
+  if (species) {
+    const evoData = await fetch(species.evolution_chain.url).then((r) => r.json()).catch(() => null);
+    if (evoData)
+      chain = evoData.chain;
+    const nonDefault = species.varieties.filter((v) => !v.is_default);
+    const formResults = await Promise.allSettled(nonDefault.map((v) => fetch(v.pokemon.url).then((r) => r.json())));
+    forms = formResults.filter((r) => r.status === "fulfilled").map((r) => r.value);
+  }
+  createDetailCard(pokemon, chain, forms);
+} catch (error) {
+  cardHolder.innerHTML = "<p>Error cargando el Pokemon: " + String(error) + "</p>";
 }

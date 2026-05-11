@@ -171,6 +171,120 @@
     background-color: rgba(0,0,0,0.05);
 }
 
+.section_label {
+    font-size: 85%;
+    font-weight: 700;
+    color: rgba(150, 150, 150, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
+}
+
+.evo_chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3em;
+}
+
+.evo_stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.evo_pokemon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.6);
+    padding: 0.4em;
+    border-radius: 0.8em;
+    border: 2px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+    font-size: 75%;
+    font-weight: 600;
+}
+
+.evo_pokemon img {
+    width: 5em;
+    height: 5em;
+    object-fit: contain;
+}
+
+.evo_pokemon p {
+    margin: 0.2em 0 0;
+}
+
+.evo_pokemon:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.evo_current {
+    border-color: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.evo_arrow {
+    font-size: 1.4em;
+    color: rgba(0, 0, 0, 0.25);
+    padding: 0 0.2em;
+    align-self: center;
+}
+
+.forms_holder {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8em;
+}
+
+.form_card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.7);
+    padding: 0.6em;
+    border-radius: 0.8em;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgb(245, 245, 245);
+    transition: transform 0.15s, box-shadow 0.15s;
+    max-width: 7em;
+}
+
+.form_card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.form_card img {
+    width: 5em;
+    height: 5em;
+    object-fit: contain;
+}
+
+.form_name {
+    font-size: 70%;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.form_types {
+    display: flex;
+    gap: 0.2em;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.form_types .type {
+    font-size: 60%;
+}
+
 @media (max-width: 576px) {
     .img_pokemon_grande {
         width: 70%;
