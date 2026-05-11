@@ -1,125 +1,139 @@
-interface Pokemon {
-    id: number;
-    name: string;
-    height: number;
-    image: string;
+import { type PokeAPIResponse } from "./funciones";
+
+interface DreamTeamAPIResponse extends Omit<PokeAPIResponse, "sprites"> {
+    sprites: {
+        front_default: string;
+        other: { "official-artwork": { front_default: string } };
+    };
+}
+
+interface DreamTeamPokemon {
+    id:         number;
+    name:       string;
+    height:     number;
+    image:      string;
     imageSmall: string;
-    types: string[];
-};
+    types:      string[];
+}
 
-const pokemons: Pokemon[] = [];
-const favoritos: Set<number> = new Set(JSON.parse(localStorage.getItem("favoritos") ?? "[]"));
+const MAX_TEAM_SIZE         = 6;
+const MAX_HEIGHT_MULTIPLIER = 3;
+const BASE_IMG_SIZE_EM      = 8;
 
-const dreamTeamHolder = document.getElementById("dreamTeam_holder") as HTMLElement;
-const dreamTeamMain = document.getElementById("dreamTeam_main") as HTMLElement;
+const LAYOUT_ORDER = [0, 2, 4, 5, 3, 1] as const;
+
+const favourites: Set<number> = new Set(JSON.parse(localStorage.getItem("favourites") ?? "[]"));
+
+const dreamTeamHolder      = document.getElementById("dreamTeam_holder")       as HTMLElement;
+const dreamTeamMain        = document.getElementById("dreamTeam_main")         as HTMLElement;
 const dreamTeamHolderSmall = document.getElementById("dreamTeam_holder_small") as HTMLElement;
 
+
 async function fetchDreamTeam(): Promise<void> {
-    const ids = [...favoritos].slice(0, 6);
+    const ids = [...favourites].slice(0, MAX_TEAM_SIZE);
 
     if (ids.length === 0) {
-        dreamTeamMain.innerHTML = "<p>No tienes favoritos aún.</p>";
+        dreamTeamMain.innerHTML = "<p>No tienes favoritos aún. ¡Añade algunos desde la Pokédex!</p>";
         return;
     }
 
-    const promises = ids.map(id =>
-        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then(res => res.json())
-    );
+    try {
+        const responses = await Promise.all(
+            ids.map(id =>
+                fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json() as Promise<DreamTeamAPIResponse>;
+                })
+            )
+        );
 
-    const results: any[] = await Promise.all(promises);
+        const team = responses.map(toDreamTeamPokemon);
 
+        // Ordenamos de mayor a menor altura para el layout visual
+        team.sort((a, b) => b.height - a.height);
 
-    const pokemonsResults: Pokemon[] = results.map(p => ({
-        id: p.id,
-        name: p.name,
-        height: p.height,
-        image: p.sprites.other['official-artwork'].front_default,
-        imageSmall: p.sprites.front_default,
-        types: p.types.map((t: any) => t.type.name)
-    }));
+        loadPokemons(reorderForLayout(team));
 
-    pokemonsResults.sort((a, b) => b.height - a.height);
-
-    const layoutOrder = [0, 2, 4, 5, 3, 1];
-    const orderedTeam = layoutOrder.map(i => pokemonsResults[i]!);
-
-    pokemons.push(...orderedTeam);
-
-    loadPokemons(pokemons);
+    } catch (error) {
+        dreamTeamMain.innerHTML = `<p>Error cargando el equipo. Inténtalo más tarde. (${error})</p>`;
+    }
 }
 
+function toDreamTeamPokemon(p: DreamTeamAPIResponse): DreamTeamPokemon {
+    return {
+        id:         p.id,
+        name:       p.name,
+        height:     p.height,
+        image:      p.sprites.other["official-artwork"].front_default,
+        imageSmall: p.sprites.front_default,
+        types:      p.types.map(t => t.type.name),
+    };
+}
 
-function loadPokemons(pokemons: Pokemon[]): void {
-    dreamTeamMain.innerHTML = "";
-    dreamTeamHolderSmall.innerHTML = "";
-
-    if (pokemons.length > 0) {
-        const main = document.createDocumentFragment();
-        const small = document.createDocumentFragment();
-
-        pokemons.forEach(pokemon => {
-            const card = createDreamTeamImg(pokemon);
-            const cardSmall = createdreamTeamSmallImg(pokemon);
-            main.appendChild(card);
-            small.appendChild(cardSmall);
-        });
-
-        dreamTeamHolder.style.background = getBackgroundFromTeam(pokemons);
-        dreamTeamMain.appendChild(main);
-        dreamTeamHolderSmall.appendChild(small);
-    } 
+function reorderForLayout(team: DreamTeamPokemon[]): DreamTeamPokemon[] {
+    return LAYOUT_ORDER
+        .filter(i => i < team.length)
+        .map(i => team[i]!);
 }
 
 function getColorFromType(type: string): string {
-  const temp = document.createElement("div");
-  temp.className = `type_${type}`;
-  document.body.appendChild(temp);
-
-  const color = getComputedStyle(temp).getPropertyValue("--type-color");
-
-  document.body.removeChild(temp);
-
-  return color.trim();
+    const temp = document.createElement("div");
+    temp.className = `type_${type}`;
+    document.body.appendChild(temp);
+    const color = getComputedStyle(temp).getPropertyValue("--type-color");
+    document.body.removeChild(temp);
+    return color.trim();
 }
 
-function getBackgroundFromTeam(pokemons: any[]): string {
-  const colors: string[] = [];
+function getBackgroundFromTeam(team: DreamTeamPokemon[]): string {
+    const colors = team
+        .map(p => p.types[0])
+        .filter((type): type is string => type !== undefined)
+        .map(getColorFromType);
 
-  pokemons.forEach(pokemon => {
-    const type = pokemon.types?.[0]; 
-    if (type) {
-      colors.push(getColorFromType(type));
-    }
-  });
-
-  return `linear-gradient(45deg, ${colors.join(", ")})`;
+    return `linear-gradient(45deg, ${colors.join(", ")})`;
 }
 
-function createDreamTeamImg(pokemon: Pokemon): HTMLDivElement {
+function loadPokemons(team: DreamTeamPokemon[]): void {
+    dreamTeamMain.innerHTML = "";
+    dreamTeamHolderSmall.innerHTML = "";
+
+    const main  = document.createDocumentFragment();
+    const small = document.createDocumentFragment();
+
+    team.forEach(pokemon => {
+        main.appendChild(createDreamTeamImg(pokemon));
+        small.appendChild(createDreamTeamSmallImg(pokemon));
+    });
+
+    dreamTeamHolder.style.background = getBackgroundFromTeam(team);
+    dreamTeamMain.appendChild(main);
+    dreamTeamHolderSmall.appendChild(small);
+}
+
+function createDreamTeamImg(pokemon: DreamTeamPokemon): HTMLDivElement {
     const card = document.createElement("div");
-    const img = document.createElement("img");
+    const img  = document.createElement("img");
 
-    const sizeMultiplier = Math.min(pokemon.height / 10, 3); // maximo 3x
+    const sizeMultiplier = Math.min(pokemon.height / 10, MAX_HEIGHT_MULTIPLIER);
 
-    img.src = pokemon.image;
-    img.alt = `foto de ${pokemon.name}`;
-    img.style.width = `calc(8em * ${sizeMultiplier})`;
-    img.style.height = `calc(8em * ${sizeMultiplier})`;
+    img.src          = pokemon.image;
+    img.alt          = `foto de ${pokemon.name}`;
+    img.style.width  = `calc(${BASE_IMG_SIZE_EM}em * ${sizeMultiplier})`;
+    img.style.height = `calc(${BASE_IMG_SIZE_EM}em * ${sizeMultiplier})`;
     img.style.zIndex = String(Math.floor(100 - sizeMultiplier));
 
-    card.style.width = `calc(1em * ${sizeMultiplier*2})`;
-    card.style.marginLeft = `${3-sizeMultiplier}em`;
+    card.style.width      = `calc(1em * ${sizeMultiplier * 2})`;
+    card.style.marginLeft = `${MAX_HEIGHT_MULTIPLIER - sizeMultiplier}em`;
 
     card.appendChild(img);
     return card;
 }
 
-function createdreamTeamSmallImg(pokemon: Pokemon): HTMLDivElement {
+function createDreamTeamSmallImg(pokemon: DreamTeamPokemon): HTMLDivElement {
     const card = document.createElement("div");
-
     card.innerHTML = `
-        <img src="${pokemon.imageSmall}"
-            alt="foto de ${pokemon.name}">
+        <img src="${pokemon.imageSmall}" alt="foto de ${pokemon.name}">
     `;
     return card;
 }
